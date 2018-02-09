@@ -56,17 +56,22 @@ typedef struct
 typedef struct
 {
 	int color;
-	int id;
+	int status;
 } jsBlock;
 
-#define JS_COLORMAP_FILLED 0x0001;
-#define JS_COLORMAP_RED    0x00F0;
-#define JS_COLORMAP_GREEN  0x0F00;
-#define JS_COLORMAP_BLUE   0xF000;
-
-int js_genid();
 int js_block_is_empty(jsBlock block);
 jsColor js_block_color(jsBlock block);
+
+
+typedef enum {
+	jsShapeFormationO = 0x20000000,
+	jsShapeFormationI = 0x40000000,
+	jsShapeFormationS = 0x60000000,
+	jsShapeFormationZ = 0x80000000,
+	jsShapeFormationL = 0xA0000000,
+	jsShapeFormationJ = 0xC0000000,
+	jsShapeFormationT = 0xE0000000,
+} jsShapeFormation;
 
 #define JS_BOARD_ROW_AMOUNT 20
 #define JS_BOARD_COLUMN_AMOUNT 10
@@ -89,9 +94,9 @@ typedef struct
 	jsBlock blocks[JS_SHAPE_COLUMN_AMOUNT];
 } jsShapeRow;
 
-unsigned js_brow_positions(jsBoardRow *row, unsigned y, jsVec2i *des);
-unsigned js_srow_positions(jsShapeRow *row, unsigned y, jsVec2i *des);
-int js_row_full(jsBoardRow *row);
+unsigned js_brow_positions(const jsBoardRow *row, unsigned y, jsVec2i *des);
+unsigned js_srow_positions(const jsShapeRow *row, unsigned y, jsVec2i *des);
+int js_row_full(const jsBoardRow *row);
 void js_row_clear(jsBoardRow *row);
 
 
@@ -106,8 +111,11 @@ typedef struct
 	jsShapeRow rows[JS_SHAPE_ROW_AMOUNT];
 } jsShape;
 
-unsigned js_board_positions(jsBoard *board, jsVec2i *des);
-unsigned js_shape_positions(jsShape *shape, jsVec2i *des);
+void js_set_shape(const jsShape *shape, jsShapeFormation form);
+jsShapeFormation js_get_shape_formation(const jsShape *shape);
+
+unsigned js_board_positions(const jsBoard *board, jsVec2i *des);
+unsigned js_shape_positions(const jsShape *shape, jsVec2i *des);
 
 
 #endif /* TETRIS_TYPES_H */
