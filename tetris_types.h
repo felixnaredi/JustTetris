@@ -31,7 +31,7 @@ typedef struct
 {
 	float x;
 	float y;
-	float z;
+	float z;	
 } jsVec3f;
 
 int js_vec2i_equal(jsVec2i a, jsVec2i b);
@@ -96,8 +96,8 @@ typedef struct
 
 unsigned js_brow_positions(const jsBoardRow *row, unsigned y, jsVec2i *des);
 unsigned js_srow_positions(const jsShapeRow *row, unsigned y, jsVec2i *des);
-int js_row_full(const jsBoardRow *row);
-void js_row_clear(jsBoardRow *row);
+int js_brow_full(const jsBoardRow *row);
+void js_brow_clear(jsBoardRow *row);
 
 
 typedef struct
@@ -111,11 +111,19 @@ typedef struct
 	jsShapeRow rows[JS_SHAPE_ROW_AMOUNT];
 } jsShape;
 
-void js_set_shape(const jsShape *shape, jsShapeFormation form);
+void js_set_shape(const jsShape *shape, jsShapeFormation form, jsVec2i offset);
 jsShapeFormation js_get_shape_formation(const jsShape *shape);
 
 unsigned js_board_positions(const jsBoard *board, jsVec2i *des);
 unsigned js_shape_positions(const jsShape *shape, jsVec2i *des);
+
+// --------------------------------------------------------------
+// Break for my auto complete in emacs
+//
+#define J_BREAK;
+typedef int jBreak;
+typedef int iBreak;
+typedef int uBreak;
 
 
 #endif /* TETRIS_TYPES_H */
