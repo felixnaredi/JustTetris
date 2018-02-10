@@ -8,13 +8,6 @@
 
 #include "build.h"
 
-#ifdef JS_BUILD_SAFE_GLOBAL
-
-#include <stdio.h>
-#endif
-
-
-
 
 #define JS_BLOCK_COLOR_FILLED 0x00000001;
 #define JS_BLOCK_COLOR_RED    0x00000FF0;
@@ -61,8 +54,9 @@ jsShapeFormation js_get_shape_formation(const jsShape *shape)
 	
 	for(i = 0; i < JS_SHAPE_LENGTH; i++) {
 		if(blocks[0].status & JS_BLOCK_FORMATION != form)
-			printf("SafeGlobalBuild js_get_shape_formation: "
-			       "'form mismatch' at %s %d\n", __FILE__, __LINE__);
+			JS_DEBUG_PRINT(js_get_shape_formation,
+				       "blocks in shape have different formations",
+				       __FILE__, __LINE__);
 	}
 #endif /* JS_BUILD_SAFE_GLOBAL */
 	
@@ -75,8 +69,7 @@ int js_block_color(jsBlock block)
 #ifdef JS_BUILD_SAFE_GLOBAL
 
 	if(js_block_is_empty(block))
-		printf("SafeGlobalBuild js_block_color: "
-		       "'empty block' at %s %d\n", __FILE__, __LINE__);
+		JS_DEBUG_PRINT(js_block_color, "empty block", __FILE__, __LINE__);
 #endif // JS_BUILD_SAFE_GLOBAL
 	
 	jsVec3f color_vector;
