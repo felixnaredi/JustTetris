@@ -6,13 +6,15 @@
 // BUILD:
 //   gcc preproc.c -o preproc.o
 //
+// MISC:
+//   NULL is part of stdio.h (or any of it's subs).
+//
 
-#define JS_ENABLE
-
-
-#ifdef JS_ENABLE
+// #define JS_ENABLE
 
 #include <stdio.h>
+
+#ifdef JS_ENABLE
 
 #define JS_PRINT_VALUE(var, type) \
 	printf(#var ": " type "\n", var)
@@ -26,7 +28,9 @@
 
 #else
 
-#define JS_PRINT_VALUE(var, type) ;
+#define JS_PRINT_VALUE(var, type)
+#define JS_DEBUG_PRINT(func, msg, file, line)
+#define JS_DEBUG_NULLPTR(ptr, func, file, line)
 
 #endif /* JS_ENABLE */
 

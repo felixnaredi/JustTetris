@@ -26,8 +26,9 @@
 
 #else
 
-#define JS_DEBUG_NULLPTR(ptr, func, file, line) ;
-#define JS_DEBUG_VALUE(var, type) ;
+#define JS_DEBUG_PRINT(func, msg, file, line)
+#define JS_DEBUG_NULLPTR(ptr, func, file, line)
+#define JS_DEBUG_VALUE(var, type)
 
 #endif /* JS_DEBUG */
 
