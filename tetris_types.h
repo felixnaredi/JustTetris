@@ -7,6 +7,18 @@
 #ifndef TETRIS_TYPES_H
 #define TETRIS_TYPES_H
 
+#include <stdbool.h>
+
+// -------------------------------------------------------------
+// Break for my auto complete in emacs
+//
+#define J_BREAK;
+typedef int jBreak;
+typedef int iBreak;
+typedef int uBreak;
+typedef int cBreak;
+// -------------------------------------------------------------
+
 
 typedef struct
 {
@@ -57,11 +69,41 @@ typedef struct
 {
 	int color;
 	int status;
+	jsVec2i position;
 } jsBlock;
 
-int js_block_is_empty(jsBlock block);
+bool js_block_is_empty(jsBlock block);
 jsColor js_block_color(jsBlock block);
 
+
+#define JS_BOARD_ROW_AMOUNT 20
+#define JS_BOARD_COLUMN_AMOUNT 10
+
+typedef struct
+{
+	jsBlock blocks[JS_BOARD_COLUMN_AMOUNT];
+} jsRow;
+
+typedef struct
+{
+	jsRow *rows[JS_BOARD_ROW_AMOUNT];
+} jsBoard;
+
+unsigned js_row_positions(const jsBoardRow *row, unsigned y, jsVec2i *des);
+bool js_row_full(const jsBoardRow *row);
+unsigned js_board_positions(const jsBoard *board, jsVec2i *des);
+unsigned js_board_indicies(const jsBoard *board, jsVec2i *des);
+
+
+typedef struct
+{
+	jsVec2i offset;
+	jsBlock blocks[JS_SHAPE_BLOCK_AMOUNT];
+} jsShape;
+
+#define JS_SHAPE_ROW_AMOUNT 4
+#define JS_SHAPE_COLUMN_AMOUNT 4
+#define JS_SHAPE_BLOCK_AMOUNT 4
 
 typedef enum {
 	jsShapeFormationO = 0x20000000,
@@ -73,57 +115,9 @@ typedef enum {
 	jsShapeFormationT = 0xE0000000,
 } jsShapeFormation;
 
-#define JS_BOARD_ROW_AMOUNT 20
-#define JS_BOARD_COLUMN_AMOUNT 10
-#define JS_SHAPE_ROW_AMOUNT 4
-#define JS_SHAPE_COLUMN_AMOUNT 4
-
-typedef struct
-{
-	jsBlock *blocks;
-} jsRow;
-
-
-typedef struct
-{
-	jsBlock blocks[JS_BOARD_COLUMN_AMOUNT];
-} jsBoardRow;
-
-typedef struct
-{
-	jsBlock blocks[JS_SHAPE_COLUMN_AMOUNT];
-} jsShapeRow;
-
-unsigned js_brow_positions(const jsBoardRow *row, unsigned y, jsVec2i *des);
-unsigned js_srow_positions(const jsShapeRow *row, unsigned y, jsVec2i *des);
-int js_brow_full(const jsBoardRow *row);
-void js_brow_clear(jsBoardRow *row);
-
-
-typedef struct
-{
-	jsBoardRow rows[JS_BOARD_ROW_AMOUNT];
-} jsBoard;
-
-typedef struct
-{
-	jsVec2i offset;
-	jsShapeRow rows[JS_SHAPE_ROW_AMOUNT];
-} jsShape;
-
-void js_set_shape(const jsShape *shape, jsShapeFormation form, jsVec2i offset);
+void js_set_shape(jsShape *shape, jsShapeFormation form, jsVec2i offset);
 jsShapeFormation js_get_shape_formation(const jsShape *shape);
-
-unsigned js_board_positions(const jsBoard *board, jsVec2i *des);
-unsigned js_shape_positions(const jsShape *shape, jsVec2i *des);
-
-// --------------------------------------------------------------
-// Break for my auto complete in emacs
-//
-#define J_BREAK;
-typedef int jBreak;
-typedef int iBreak;
-typedef int uBreak;
+unsigned js_shape_positions(const jsShape *shape, jsVec2i *des);	
 
 
 #endif /* TETRIS_TYPES_H */
