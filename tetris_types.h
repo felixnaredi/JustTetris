@@ -78,6 +78,7 @@ jsColor js_block_color(jsBlock block);
 
 #define JS_BOARD_ROW_AMOUNT 20
 #define JS_BOARD_COLUMN_AMOUNT 10
+#define JS_BOARD_BLOCK_AMOUNT JS_BOARD_ROW_AMOUNT * JS_BOARD_COLUMN_AMOUNT
 
 typedef struct
 {
@@ -89,10 +90,10 @@ typedef struct
 	jsRow *rows[JS_BOARD_ROW_AMOUNT];
 } jsBoard;
 
-unsigned js_row_positions(const jsBoardRow *row, unsigned y, jsVec2i *des);
-bool js_row_full(const jsBoardRow *row);
+unsigned js_row_positions(const jsRow *row, jsVec2i *des);
+bool js_row_full(const jsRow *row);
 unsigned js_board_positions(const jsBoard *board, jsVec2i *des);
-unsigned js_board_indicies(const jsBoard *board, jsVec2i *des);
+unsigned js_board_indicies(const jsBoard *board, unsigned *des);
 
 
 #define JS_SHAPE_BLOCK_AMOUNT 4
