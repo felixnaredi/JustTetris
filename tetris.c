@@ -108,7 +108,7 @@ unsigned js_board_indicies(const jsBoard *board, unsigned *des)
 void js_set_shape(const jsShape *shape, jsShapeFormation form, jsVec2i offset)
 {
 	JS_DEBUG_NULLPTR(shape, js_set_shape, __FILE__, __LINE__);
-	JS_DEBUG_NULLPTR(shape->rows, js_set_shape, __FILE__, __LINE__);
+	JS_DEBUG_NULLPTR(shape->blocks, js_set_shape, __FILE__, __LINE__);
 
 	int i;
 	jsBlock *blocks = (jsBlock *) shape->blocks;	
@@ -122,11 +122,11 @@ void js_set_shape(const jsShape *shape, jsShapeFormation form, jsVec2i offset)
 jsShapeFormation js_get_shape_formation(const jsShape *shape)
 {
 	JS_DEBUG_NULLPTR(shape, js_get_shape_formation, __FILE__, __LINE__);
-	JS_DEBUG_NULLPTR(shape->rows, js_get_shape_formation, __FILE__, __LINE__);
+	JS_DEBUG_NULLPTR(shape->blocks, js_get_shape_formation, __FILE__, __LINE__);
 	
 #ifdef JS_BUILD_SAFE_GLOBAL
 	int i;
-	jsBlock *blocks = shape->rows->blocks
+	jsBlock *blocks = shape->blocks
 	int form = blocks[0].status & JS_BLOCK_FORMATION;
 	
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {
