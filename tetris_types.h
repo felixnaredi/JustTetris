@@ -95,15 +95,13 @@ unsigned js_board_positions(const jsBoard *board, jsVec2i *des);
 unsigned js_board_indicies(const jsBoard *board, jsVec2i *des);
 
 
+#define JS_SHAPE_BLOCK_AMOUNT 4
+
 typedef struct
 {
 	jsVec2i offset;
 	jsBlock blocks[JS_SHAPE_BLOCK_AMOUNT];
 } jsShape;
-
-#define JS_SHAPE_ROW_AMOUNT 4
-#define JS_SHAPE_COLUMN_AMOUNT 4
-#define JS_SHAPE_BLOCK_AMOUNT 4
 
 typedef enum {
 	jsShapeFormationO = 0x20000000,
