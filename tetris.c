@@ -79,10 +79,10 @@ bool js_row_full(const jsRow *row)
 
 	for(i = 0; i < JS_BOARD_COLUMN_AMOUNT; i++) {
 		if(js_block_is_empty(blocks[i]))
-			return FALSE;
+			return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 unsigned js_board_indicies(const jsBoard *board, unsigned *des)
@@ -126,7 +126,7 @@ jsShapeFormation js_get_shape_formation(const jsShape *shape)
 	
 #ifdef JS_BUILD_SAFE_GLOBAL
 	int i;
-	jsBlock *blocks = shape->blocks
+	jsBlock *blocks = shape->blocks;
 	int form = blocks[0].status & JS_BLOCK_FORMATION;
 	
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {
@@ -153,3 +153,33 @@ unsigned js_shape_positions(const jsShape *shape, jsVec2i *des)
 
 	return JS_SHAPE_BLOCK_AMOUNT;
 }
+
+static void __js_shape_positions(const jsShape *shape, jsVec2i *des)
+{
+	int i;
+	jsBlock *blocks = shape->blocks;
+
+	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++)
+		des[i] = blocks[i] + shape->offset;
+}
+
+static bool __js_overlapp(const jsShape *shape, jsVec2i offset, const jsBoard *board)
+{
+	jsVec2i positions[JS_SHAPE_BLOCK_AMOUNT];
+	int i;
+	
+	__js_shape_positions(shape, positions);
+
+	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {
+		jsVec2i pos = js_vec2i_add(positions[i], offset);
+
+		if(!js_block_is_empty(board->rows[pos.y]->blocks[pos.x]))
+			return true;
+	}
+
+	return false;
+}
+		
+
+	
+	

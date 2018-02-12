@@ -17,7 +17,47 @@ typedef int jBreak;
 typedef int iBreak;
 typedef int uBreak;
 typedef int cBreak;
+typedef int bBreak;
+typedef int rBreak;
 // -------------------------------------------------------------
+
+//
+// Frame Cycle:
+//
+//   cycle
+//   |
+//   game over
+//   |       |
+//  (false) (true)
+//   |          |
+//   |          o----------------------------o
+//   |                                       |
+//   input buffer                            |
+//   |          |                            |
+//  (empty)    (input)                       |
+//   |              |                        |
+//   move trigger   |                        |
+//   |          |   |                        |
+//  (false) (true)--|                        |
+//   |              |                        |
+//   |              try move shape           |
+//   |              |            |           |
+//   |             (false)      (true)       |
+//   |              |   |        |           |
+//   |--------(ignore) (freeze)  move shape  |
+//   |                  |                 |  |
+//   |                  add to board      o--o
+//   should redraw      |                 |
+//   |           |      clear rows        |
+//  (no)        (yes)   |                 |
+//   |           |      next shape        |
+//   |           |      |                 |
+//   |      redraw------o-----------------o
+//   |      |
+//   o------o
+//      |
+//      next cycle
+//
 
 
 typedef struct
@@ -116,7 +156,7 @@ typedef enum {
 
 void js_set_shape(jsShape *shape, jsShapeFormation form, jsVec2i offset);
 jsShapeFormation js_get_shape_formation(const jsShape *shape);
-unsigned js_shape_positions(const jsShape *shape, jsVec2i *des);	
+unsigned js_shape_positions(const jsShape *shape, jsVec2i *des);
 
 
 #endif /* TETRIS_TYPES_H */
