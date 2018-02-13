@@ -111,8 +111,6 @@ typedef struct
 	jsVec2i position;
 } jsBlock;
 
-bool js_block_is_empty(const jsBlock block);
-
 
 #define JS_BOARD_ROW_AMOUNT 20
 #define JS_BOARD_COLUMN_AMOUNT 10
@@ -127,11 +125,6 @@ typedef struct
 {
 	jsRow rows[JS_BOARD_ROW_AMOUNT];
 } jsBoard;
-
-unsigned js_row_positions(const jsRow *row, jsVec2i *des);
-bool js_row_full(const jsRow *row);
-unsigned js_board_positions(const jsBoard *board, jsVec2i *des);
-unsigned js_board_indicies(const jsBoard *board, unsigned *des);
 
 
 #define JS_SHAPE_BLOCK_AMOUNT 4
@@ -151,10 +144,6 @@ typedef enum {
 	jsShapeFormationJ = 0xC0000000,
 	jsShapeFormationT = 0xE0000000,
 } jsShapeFormation;
-
-void js_set_shape(jsShape *shape, jsShapeFormation form, jsVec2i offset);
-jsShapeFormation js_get_shape_formation(const jsShape *shape);
-unsigned js_shape_positions(const jsShape *shape, jsVec2i *des);
 
 
 #endif /* TETRIS_TYPES_H */
