@@ -12,7 +12,7 @@
 // -------------------------------------------------------------
 // Break for my auto complete in emacs
 //
-#define J_BREAK;
+#define J_BREAK
 typedef int jBreak;
 typedef int iBreak;
 typedef int uBreak;
@@ -107,13 +107,11 @@ typedef struct
 
 typedef struct
 {
-	int color;
 	int status;
 	jsVec2i position;
 } jsBlock;
 
-bool js_block_is_empty(jsBlock block);
-jsColor js_block_color(jsBlock block);
+bool js_block_is_empty(const jsBlock block);
 
 
 #define JS_BOARD_ROW_AMOUNT 20
@@ -127,7 +125,7 @@ typedef struct
 
 typedef struct
 {
-	jsRow *rows[JS_BOARD_ROW_AMOUNT];
+	jsRow rows[JS_BOARD_ROW_AMOUNT];
 } jsBoard;
 
 unsigned js_row_positions(const jsRow *row, jsVec2i *des);

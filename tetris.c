@@ -6,18 +6,13 @@
 
 #include <stdbool.h>
 
-#include "tetris_types.h"
-
+#include "tetris.h"
 #include "build.h"
 
 
-#define JS_BLOCK_COLOR_FILLED 0x00000001;
-#define JS_BLOCK_COLOR_RED    0x0000FF00;
-#define JS_BLOCK_COLOR_GREEN  0x00FF0000;
-#define JS_BLOCK_COLOR_BLUE   0xFF000000;
-
-#define JS_BLOCK_TIME      0x1FFFFFFF;
-#define JS_BLOCK_FORMATION 0xE0000000;
+#define JS_BLOCK_COLOR_FILLED 0x00000001
+#define JS_BLOCK_TIME         0x1FFFFF00
+#define JS_BLOCK_FORMATION    0xE0000000
 
 #define JS_BLOCK_FORMATION_OFFSET 29
 
@@ -25,28 +20,11 @@
 #define JS_SHAPE_COLUMN_AMOUNT 4
 
 
-int js_block_is_empty(jsBlock block)
+bool js_block_is_empty(const jsBlock block)
 {
-	return !(block.color & JS_BLOCK_COLOR_FILLED);
+	return !(block.status & JS_BLOCK_COLOR_FILLED);
 }
 
-int js_block_color(jsBlock block)
-{
-#ifdef JS_BUILD_SAFE_GLOBAL
-
-	if(js_block_is_empty(block))
-		JS_DEBUG_PRINT(js_block_color, "empty block", __FILE__, __LINE__);
-#endif // JS_BUILD_SAFE_GLOBAL
-	
-	jsVec3f color_vector;
-	int color = block.color;
-	
-	color_vector.r = (float) ((color & JS_BLOCK_COLOR_RED) >> 0x0008);
-	color_vector.g = (float) ((color & JS_BLOCK_COLOR_GREEN) >> 0x0010);
-	color_vector.b = (float) ((color & JS_BLOCK_COLOR_BLUE) >> 0x0018);
-
-	return color_vector;
-}
 
 unsigned js_row_positions(const jsRow *row, jsVec2i *des)
 {
@@ -55,9 +33,9 @@ unsigned js_row_positions(const jsRow *row, jsVec2i *des)
 	JS_DEBUG_NULLPTR(des, js_row_positions, __FILE__, __LINE__);
 
 	int i, count = 0;
-	jsBlock *blocks = row->blocks;
+	const jsBlock *blocks = row->blocks;
 
-	for(i = 0; i < len; i++) {
+	for(i = 0; i < JS_BOARD_COLUMN_AMOUNT; i++) {
 		jsBlock block = blocks[i];
 		
 		if(!js_block_is_empty(block)) {
@@ -75,7 +53,7 @@ bool js_row_full(const jsRow *row)
 	JS_DEBUG_NULLPTR(row->blocks, js_row_full, __FILE__, __LINE__);
 	
 	int i;
-	jsBlock *blocks = row->blocks;
+	const jsBlock *blocks = row->blocks;
 
 	for(i = 0; i < JS_BOARD_COLUMN_AMOUNT; i++) {
 		if(js_block_is_empty(blocks[i]))
@@ -92,7 +70,7 @@ unsigned js_board_indicies(const jsBoard *board, unsigned *des)
 	JS_DEBUG_NULLPTR(board->rows->blocks, js_board_indicies, __FILE__, __LINE__);
 	
 	unsigned i, count = 0;
-	jsBlock *blocks = board->rows->blocks;
+	const jsBlock *blocks = board->rows->blocks;
 
 	for(i = 0; i < JS_BOARD_BLOCK_AMOUNT; i++) {
 		if(!(js_block_is_empty(blocks[i]))) {
@@ -105,7 +83,7 @@ unsigned js_board_indicies(const jsBoard *board, unsigned *des)
 }
 			
 
-void js_set_shape(const jsShape *shape, jsShapeFormation form, jsVec2i offset)
+void js_set_shape(jsShape *shape, jsShapeFormation form, jsVec2i offset)
 {
 	JS_DEBUG_NULLPTR(shape, js_set_shape, __FILE__, __LINE__);
 	JS_DEBUG_NULLPTR(shape->blocks, js_set_shape, __FILE__, __LINE__);
@@ -114,7 +92,7 @@ void js_set_shape(const jsShape *shape, jsShapeFormation form, jsVec2i offset)
 	jsBlock *blocks = (jsBlock *) shape->blocks;	
 	
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++)
-		blocks[i] |= form;
+		blocks[i].status |= form;
 	
 	shape->offset = offset;
 }
@@ -146,10 +124,10 @@ unsigned js_shape_positions(const jsShape *shape, jsVec2i *des)
 	JS_DEBUG_NULLPTR(shape->blocks, js_shape_positions, __FILE__, __LINE__);
 
 	int i;
-	jsBlock *blocks = shape->blocks;
+	const jsBlock *blocks = shape->blocks;
 
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++)
-		des[i] = blocks[i] + shape->offset;
+	  des[i] = js_vec2i_add(blocks[i].position, shape->offset);
 
 	return JS_SHAPE_BLOCK_AMOUNT;
 }
@@ -157,10 +135,10 @@ unsigned js_shape_positions(const jsShape *shape, jsVec2i *des)
 static void __js_shape_positions(const jsShape *shape, jsVec2i *des)
 {
 	int i;
-	jsBlock *blocks = shape->blocks;
+	const jsBlock *blocks = shape->blocks;
 
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++)
-		des[i] = blocks[i] + shape->offset;
+		des[i] = js_vec2i_add(blocks[i].position, shape->offset);
 }
 
 static bool __js_overlapp(const jsShape *shape, jsVec2i offset, const jsBoard *board)
@@ -173,7 +151,7 @@ static bool __js_overlapp(const jsShape *shape, jsVec2i offset, const jsBoard *b
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {
 		jsVec2i pos = js_vec2i_add(positions[i], offset);
 
-		if(!js_block_is_empty(board->rows[pos.y]->blocks[pos.x]))
+		if(!js_block_is_empty(board->rows[pos.y].blocks[pos.x]))
 			return true;
 	}
 

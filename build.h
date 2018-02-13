@@ -11,6 +11,8 @@
 
 // #define JS_DEBUG
 // #define JS_BUILD_SAFE_GLOBAL
+// #define JS_BUILD_RENDER_NCURSES
+// #define JS_BUILD_RENDER_OPENGL
 
 #ifdef JS_DEBUG
 
