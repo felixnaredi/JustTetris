@@ -58,7 +58,7 @@ void js_set_program_quit(bool value)
 
 void js_draw_title_screen()
 {
-	WINDOW *title_window;
+	WINDOW *title_window, *console_window;
 	int x, w;
 	int row, col;
 	char *title = "JUST TETRIS";
@@ -68,10 +68,7 @@ void js_draw_title_screen()
 	mvprintw(7, 10, "Character pressed: ");
 	
 	if(input)
-		addch(input | A_BOLD);
-	
-	getmaxyx(stdscr, row, col);
-	mvprintw(20, 0, "max: [%d, %d], x: %d, w: %d\n", row, col, x, w);
+		addch(input | A_BOLD);       
 	
 	refresh();
 
@@ -87,7 +84,18 @@ void js_draw_title_screen()
 	
 	mvwaddstr(title_window, 1, 3, title);
 	
-	wrefresh(title_window);	
+	wrefresh(title_window);
+
+	getmaxyx(stdscr, row, col);
+	console_window = newwin(1, col, row - 2, 0);
+
+	wprintw(console_window, "screen: [%d, %d], center: %d, title width: %d\n",
+		col, row, x, w);
+
+	wrefresh(console_window);
+	
+	delwin(title_window);
+	delwin(console_window);
 }
 
 void js_draw_file()
