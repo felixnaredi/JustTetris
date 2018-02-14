@@ -9,17 +9,7 @@
 
 #include <stdbool.h>
 
-// -------------------------------------------------------------
-// Break for my auto complete in emacs
-//
-#define J_BREAK
-typedef int jBreak;
-typedef int iBreak;
-typedef int uBreak;
-typedef int cBreak;
-typedef int bBreak;
-typedef int rBreak;
-// -------------------------------------------------------------
+#include "emacs_ac_break.h"
 
 //
 // Frame Cycle:
@@ -36,27 +26,35 @@ typedef int rBreak;
 //   |          |                            |
 //  (empty)    (input)                       |
 //   |              |                        |
-//   move trigger   |                        |
-//   |          |   |                        |
-//  (false) (true)--|                        |
+//   countdown      |                        |
+//   |       |      |                        |
+//  (false) (true)--o                        |
 //   |              |                        |
 //   |              try move shape           |
 //   |              |            |           |
-//   |             (false)      (true)       |
-//   |              |   |        |           |
-//   |--------(ignore) (freeze)  move shape  |
-//   |                  |                 |  |
-//   |                  add to board      o--o
-//   should redraw      |                 |
-//   |           |      clear rows        |
-//  (no)        (yes)   |                 |
-//   |           |      next shape        |
-//   |           |      |                 |
-//   |      redraw------o-----------------o
+//   |             (false)      (true)       o-------o
+//   |              |   |           |                |
+//   o--------(ignore) (freeze)     reset countdown  |
+//   |                  |           |                |
+//   |                  |           move shape       |
+//   |                  |                    |       |
+//   |                  o--------------------|-------o
+//   |                  |                    |
+//   |                  add to board         |
+//   |                  |                    |
+//   |                  clear rows           |
+//   should redraw      |                    |
+//   |           |      next shape           |
+//  (no)        (yes)   |                    |
+//   |           |      set game over        |
+//   |           |      |                    |
+//   |           o------o--------------------o
+//   |           |
+//   |      redraw
 //   |      |
 //   o------o
-//      |
-//      next cycle
+//   |
+//   next cycle
 //
 
 
