@@ -4,17 +4,36 @@
 // Author: Felix Nared
 //
 
-#include <ncurses.h>
+#include <stdio.h>
+#include <stdbool.h>
 
-#include "tetris.h"
+#include "interface.h"
+
+#include "emacs_ac_break.h"
 
 int main(int argc, char *argv[])
 {
-  initscr();
-  printw("Hello World!");
-  refresh();
-  getch();
-  endwin();
-  
-  return 0;
+	int count = 0;	
+	
+	if(!js_init_interface()) {
+		printf("Failed to initialize interface\n");
+		return -1;
+	}
+
+	while(!js_program_will_quit()) {
+		js_draw_title_screen();
+		js_wait_for_input();
+
+		// js_draw_file();
+
+		if(count > 5)
+			js_set_program_quit(true);
+		
+		count++;
+	}
+
+	js_free_interface();
+	printf("Program will quit\n");
+	
+	return 0;
 }
