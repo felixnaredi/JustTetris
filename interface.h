@@ -15,7 +15,7 @@ void js_wait_for_input();
 bool js_program_will_quit();
 void js_set_program_quit(bool value);
 
-void js_draw_title_screen();
-void js_draw_file();
+void js_draw_main_menu();
+void js_draw_game();
 
 

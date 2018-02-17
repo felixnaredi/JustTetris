@@ -16,15 +16,19 @@
 
 #ifdef JS_DEBUG
 
+int js_debug_init_log(char *path);
+
+int __js_debug_print(const char *func, const char *file, int line, const char *format, ...);
+
 #define JS_DEBUG_PRINT(func, msg, file, line) \
-	printf("DEBUG " #func ": %s - File: %s (%d)\n", msg, file, line);
+	__js_debug_print(#func, file, line "");
 
 #define JS_DEBUG_NULLPTR(ptr, func, file, line)	\
 	if(ptr == NULL) \
-		JS_DEBUG_PRINT("DEBUG " func, "null pointer (" #ptr ")", file, line)
+		__js_debug_print(#func, file, line, "");
 
-#define JS_DEBUG_VALUE(var, type) \
-	printf("DEBUG " #var ": " type "\n", var)
+#define JS_DEBUG_VALUE(func, var, type)		\
+	__js_debug_print(#func, __FILE__, __LINE__, "");
 
 #else
 

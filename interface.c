@@ -4,170 +4,153 @@
 // Author: Felix Nared
 //
 
+#include <string.h>
 #include <stdbool.h>
 
 #include <ncurses.h>
 
 #include "interface.h"
 #include "tetris.h"
+#include "build.h"
 
-#include <stdio.h>
-#include <string.h>
 #include "emacs_ac_break.h"
 
 
-static char input = 0;
-static bool quit = false;
+FILE *js_debug_file;
 
+static int __js_input = 0;
+static bool __js_quit = false;
 
 bool js_init_interface()
 {
+#ifdef JS_DEBUG
+	js_debug_init_log(NULL);
+#endif // JS_DEBUG
+	
 	initscr();
 	raw();
 	noecho();
 
 	start_color();
-	init_pair(1, COLOR_RED, COLOR_BLUE);
 	
 	return true;
 }
 
 void js_free_interface()
 {
-	quit = true;
+	__js_quit = true;
 	endwin();
 }
 
 void js_wait_for_input()
 {
-	input = getch();
+	__js_input = getch();
 
-	if(input == 'q')
+	if(__js_input == 'q')
 		js_set_program_quit(true);
 }
 
 bool js_program_will_quit()
 {
-	return quit;
+	return __js_quit;
 }
 
 void js_set_program_quit(bool value)
 {
-	quit = value;
+	__js_quit = value;
 }
 
-void js_draw_title_screen()
+static void __draw_title_window(jsVec2i pos)
 {
-	WINDOW *title_window, *console_window;
-	int x, w;
-	int row, col;
+	WINDOW *window;
+	int width;
 	char *title = "JUST TETRIS";
-	
-	clear();
+	jsVec2i margin = {3, 1};
 
-	mvprintw(7, 10, "Character pressed: ");
-	
-	if(input)
-		addch(input | A_BOLD);       
-	
-	refresh();
+	width = strlen(title) + margin.x * 2;
+	window = newwin(3, width, pos.y, pos.x - width / 2);
 
-	x = getmaxx(stdscr) / 2 - 8;
-	w = strlen(title) + 6;
 	init_pair(1, COLOR_RED, COLOR_BLUE);
-	
-	title_window = newwin(3, w, 3, x);
+	wattrset(window, A_BOLD);
 
-	wbkgd(title_window, COLOR_PAIR(1));
-	box(title_window, 0, 0);
-	wattrset(title_window, A_BOLD);
-	
-	mvwaddstr(title_window, 1, 3, title);
-	
-	wrefresh(title_window);
+	wbkgd(window, COLOR_PAIR(1));
+	box(window, 0, 0);
+	mvwaddstr(window, margin.y, margin.x, title);
 
-	getmaxyx(stdscr, row, col);
-	console_window = newwin(1, col, row - 2, 0);
-
-	wprintw(console_window, "screen: [%d, %d], center: %d, title width: %d\n",
-		col, row, x, w);
-
-	wrefresh(console_window);
-	
-	delwin(title_window);
-	delwin(console_window);
+	wrefresh(window);
+	delwin(window);
 }
 
-void js_draw_file()
+typedef struct
 {
-	int rows;
-	char name[64], c, prev = 0;
-	FILE *fp;
-	bool comment = false;
+	char *name;
+	void (*on_enter)(int);
+} jsMenuItem;
+
+static void __draw_menu_item(const jsMenuItem *item, jsVec2i pos, bool selected)
+{
+	const char *name = item->name;
+	WINDOW *window = newwin(1, strlen(name), pos.y, pos.x);
+
+	if(selected)
+		wattrset(window, A_REVERSE);
+
+	waddstr(window, name);
+
+	wrefresh(window);
+	delwin(window);
+}
+
+static void __draw_menu_items(const jsMenuItem *items, int count, int index, jsVec2i pos)
+{
+	int i;
+
+	for(i = 0; i < count; i++) {
+		__draw_menu_item(&items[i], pos, i == index);
+		pos.y += 2;
+	}
+}
+
+void js_draw_main_menu()
+{
+	int cx;
+	jsVec2i title_pos = {0, 2}, menu_pos = {0, 6};
+
+	jsMenuItem items[] = {
+		{"First Item", NULL},
+		{"Second Item", NULL},
+	};
+	int index = 0, count = 2;
 	
-	clear();
+	cx = getmaxx(stdscr) / 2;
 	
-	addstr("Enter file name: ");	
+	title_pos.x = cx;
+	menu_pos.x = cx - 10;
 
-	attron(A_BOLD);
-	echo();	
-	getstr(name);
-	attroff(A_BOLD);
+	JS_DEBUG_VALUE(js_draw_main_menu, KEY_UP, "%d");
+	JS_DEBUG_VALUE(js_draw_main_menu, KEY_DOWN, "%d");
+
+	while(!js_program_will_quit()) {
+		clear();
+		refresh();
+
+		__draw_title_window(title_pos);
+		__draw_menu_items(items, count, index, menu_pos);		
 	
-	fp = fopen(name, "r");
+		js_wait_for_input();
+		JS_DEBUG_VALUE(js_draw_main_menu, __js_input, "%d");
 
-	clear();
-	move(0, 0);
-
-	if(fp == NULL) {
-		addstr("Error - failed to open file ");
-		attron(A_BOLD);
-		addstr(name);
-		attroff(A_BOLD);
-		
-		getch();
-
-		js_set_program_quit(true);
-		return;
+		switch(__js_input) {
+		case KEY_UP:
+			index--;
+			index = index < 0 ? count : index;
+			break;
+		case KEY_DOWN:
+			index = (index + 1) % count;
+			break;
+		default:
+			break;
+		}
 	}
 
-	rows = getmaxy(stdscr);		
-	
-	while((c = getc(fp)) != EOF) {
-		int y, x;
-		
-		getyx(stdscr, y, x);
-
-		if(y == rows - 1) {
-			attron(A_PROTECT);
-			addstr("[ NEXT PAGE ]");
-			attroff(A_PROTECT);
-
-			refresh();
-
-			getch();
-
-			clear();
-			move(0, 0);
-		}
-		
-		if(c == '/' && prev == '/') {
-			attron(A_ITALIC);
-			comment = true;
-		}
-		
-		if(c == '\n' && comment) {
-			attroff(A_ITALIC);
-			comment = false;
-		}
-
-		addch(c);
-		prev = c;
-	}		
-
-	refresh();
-	getch();	
-
-	js_set_program_quit(true);
 }
-	
