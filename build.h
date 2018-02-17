@@ -20,21 +20,21 @@ int js_debug_init_log(char *path);
 
 int __js_debug_print(const char *func, const char *file, int line, const char *format, ...);
 
-#define JS_DEBUG_PRINT(func, msg, file, line) \
-	__js_debug_print(#func, file, line "");
+#define JS_DEBUG_PUTS(func, msg) \
+	__js_debug_print(#func, __FILE__, __LINE__, msg)
 
-#define JS_DEBUG_NULLPTR(ptr, func, file, line)	\
+#define JS_DEBUG_NULLPTR(func, ptr)		\
 	if(ptr == NULL) \
-		__js_debug_print(#func, file, line, "");
+		__js_debug_print(#func, __FILE__, __LINE__, "null pointer exception: " #ptr)
 
 #define JS_DEBUG_VALUE(func, var, type)		\
-	__js_debug_print(#func, __FILE__, __LINE__, "");
+	__js_debug_print(#func, __FILE__, __LINE__, #var ": " type, var)
 
 #else
 
-#define JS_DEBUG_PRINT(func, msg, file, line)
-#define JS_DEBUG_NULLPTR(ptr, func, file, line)
-#define JS_DEBUG_VALUE(var, type)
+#define JS_DEBUG_PUTS(func, msg)
+#define JS_DEBUG_NULLPTR(func, ptr)
+#define JS_DEBUG_VALUE(func, var, type)
 
 #endif /* JS_DEBUG */
 

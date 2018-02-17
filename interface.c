@@ -91,6 +91,7 @@ static void __draw_menu_item(const jsMenuItem *item, jsVec2i pos, bool selected)
 {
 	const char *name = item->name;
 	WINDOW *window = newwin(1, strlen(name), pos.y, pos.x);
+	void *widget = NULL;
 
 	if(selected)
 		wattrset(window, A_REVERSE);
