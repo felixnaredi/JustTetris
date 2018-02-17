@@ -17,6 +17,7 @@
 #ifdef JS_DEBUG
 
 int js_debug_init_log(char *path);
+int js_debug_close_log();
 
 int __js_debug_print(const char *func, const char *file, int line, const char *format, ...);
 

@@ -12,7 +12,7 @@
 
 #include "emacs_ac_break.h"
 
-static FILE *__js_debug_file;
+static FILE *__js_debug_file = NULL;
 
 static size_t __js_now(char *des, size_t len)
 {
@@ -23,6 +23,9 @@ static size_t __js_now(char *des, size_t len)
 
 int js_debug_init_log(char *path) {
 	char now[32];
+
+	if(__js_debug_file != NULL)
+		return 0;
 	
 	if(path == NULL)
 		path = "log";
@@ -30,12 +33,30 @@ int js_debug_init_log(char *path) {
 	__js_debug_file = fopen(path, "a");
 
 	if(__js_debug_file == NULL) {
+		printf("Could not open debug file (file set to stdout)\n");
 		__js_debug_file = stdout;
 		return 0;
 	}
 
 	__js_now(now, sizeof(now));
-	fprintf(__js_debug_file, "-------- NEW RUN %s --------\n", now);
+	
+	fprintf(__js_debug_file, "-------- LOG INITIATED %s --------\n", now);
+
+	return 1;
+}
+
+int js_debug_close_log()
+{
+	char now[32];
+	
+	if(__js_debug_file == NULL || __js_debug_file == stdout)
+		return 0;
+
+	__js_now(now, sizeof(now));
+	
+	fprintf(__js_debug_file, "-------- LOG CLOSED %s --------\n\n", now);
+	
+	fclose(__js_debug_file);
 
 	return 1;
 }

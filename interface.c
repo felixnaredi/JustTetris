@@ -15,18 +15,11 @@
 
 #include "emacs_ac_break.h"
 
-
-FILE *js_debug_file;
-
 static int __js_input = 0;
 static bool __js_quit = false;
 
 bool js_init_interface()
-{
-#ifdef JS_DEBUG
-	js_debug_init_log(NULL);
-#endif // JS_DEBUG
-	
+{	
 	initscr();
 	raw();
 	noecho();
