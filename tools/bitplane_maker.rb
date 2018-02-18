@@ -18,7 +18,7 @@ class String
 end
 
 def hexf(n)
-  ("0x%08X" %n).gsub '.', 'F'
+  ("0x%08X" % n).gsub '.', 'F'
 end
 
 SHAPES = [
@@ -188,7 +188,7 @@ def print_shape_bitplanes()
 end
 
 def print_shape_points
-  puts "static const __JSTPoint shapePoints[] = {"
+  puts "static const jsVec2i shapeVerticies[] = {"
   SHAPES.flatten(1).each do |shape|
     print "\t{ "
     print points_from_rows(shape).map { |p| "{#{p[:x]}, #{p[:y]}}" }.join(", ")
@@ -197,3 +197,35 @@ def print_shape_points
   puts "};"
 end
 
+def print_rot_ranges(varname = 'rotRanges', datatype = 'int')
+  puts "static const #{datatype} #{varname}[]#{datatype == 'int' ? '[2]' : ''} = {"
+  print "\t"
+  index = 0
+  SHAPES.each { |shape|
+    print "{#{index}, #{index + shape.length - 1}}, "
+    index += shape.length
+  }
+  puts "\n};"
+end
+
+def shape_verticies
+  forms = [
+    	'jsShapeFormationO',
+	'jsShapeFormationI',
+	'jsShapeFormationS',
+	'jsShapeFormationZ',
+	'jsShapeFormationL',
+	'jsShapeFormationJ',
+	'jsShapeFormationT',
+  ]
+  puts 'static const jsShape __shape_verticies[] = {'
+  SHAPES.each { |form|
+    fn = forms.shift
+    form.each { |shape|
+      print "\tJS_SHAPE_VERTICIES(#{fn}, "
+      print points_from_rows(shape).map { |p| "#{p[:x]}, #{p[:y]}"}.join ', '
+      puts "),"
+    }
+  }
+  puts '};'
+end

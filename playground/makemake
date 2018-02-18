@@ -24,5 +24,3 @@ Dir.new(Dir.pwd).each { |e|
 }
 
 f.puts "clean:\n\trm *~ *.o *_log"
-
-
