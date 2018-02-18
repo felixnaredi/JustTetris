@@ -15,8 +15,8 @@
 
 #include "emacs_ac_break.h"
 
-static int __js_input = 0;
-static bool __js_quit = false;
+static int input = 0;
+static bool quit = false;
 
 bool js_init_interface()
 {	
@@ -32,29 +32,29 @@ bool js_init_interface()
 
 void js_free_interface()
 {
-	__js_quit = true;
+	quit = true;
 	endwin();
 }
 
 void js_wait_for_input()
 {
-	__js_input = getch();
+	input = getch();
 
-	if(__js_input == 'q')
+	if(input == 'q')
 		js_set_program_quit(true);
 }
 
 bool js_program_will_quit()
 {
-	return __js_quit;
+	return quit;
 }
 
 void js_set_program_quit(bool value)
 {
-	__js_quit = value;
+	quit = value;
 }
 
-static void __draw_title_window(jsVec2i pos)
+static void __js_draw_title_window(jsVec2i pos)
 {
 	WINDOW *window;
 	int width;
@@ -79,9 +79,9 @@ typedef struct
 {
 	char *name;
 	void (*select)(void *sender);
-} __jsMenuItem;
+} __js_jsMenuItem;
 
-static void __draw_menu_item(const __jsMenuItem *item, jsVec2i pos, bool selected)
+static void __js_draw_menu_item(const __js_jsMenuItem *item, jsVec2i pos, bool selected)
 {
 	const char *name = item->name;
 	WINDOW *window = newwin(1, strlen(name), pos.y, pos.x);
@@ -96,23 +96,23 @@ static void __draw_menu_item(const __jsMenuItem *item, jsVec2i pos, bool selecte
 	delwin(window);
 }
 
-static void __draw_menu_items(const __jsMenuItem *items, int count, int index, jsVec2i pos)
+static void __js_draw_menu_items(const __js_jsMenuItem *items, int count, int index, jsVec2i pos)
 {
 	int i;
 
 	for(i = 0; i < count; i++) {
-		__draw_menu_item(&items[i], pos, i == index);
+		__js_draw_menu_item(&items[i], pos, i == index);
 		pos.y += 2;
 	}
 }
 
-static void __item_name(void *sender)
+static void __js_item_name(void *sender)
 {
-	__jsMenuItem *item = (__jsMenuItem *) sender;
-	JS_DEBUG_VALUE(__item_name, item->name, "%s");
+	__js_jsMenuItem *item = (__js_jsMenuItem *) sender;
+	JS_DEBUG_VALUE(__js_item_name, item->name, "%s");
 }
 
-static void __quit_program(void *sender)
+static void __js_quit_program(void *sender)
 {	
 	js_set_program_quit(true);
 }
@@ -122,9 +122,9 @@ void js_draw_main_menu()
 	int cx;
 	jsVec2i title_pos = {0, 2}, menu_pos = {0, 6};
 
-	__jsMenuItem items[] = {
-		{"New Game", __item_name},
-		{"Quit", __quit_program},
+	__js_jsMenuItem items[] = {
+		{"New Game", __js_item_name},
+		{"Quit", __js_quit_program},
 	};
 	int index = 0, count = 2;
 	
@@ -135,17 +135,17 @@ void js_draw_main_menu()
 	menu_pos.x = js_max(cx - 5, 3);
 
 	while(!js_program_will_quit()) {
-		__jsMenuItem item = items[index];
+		__js_jsMenuItem item = items[index];
 		
 		clear();
 		refresh();
 
-		__draw_title_window(title_pos);
-		__draw_menu_items(items, count, index, menu_pos);		
-	
+		__js_draw_title_window(title_pos);
+		__js_draw_menu_items(items, count, index, menu_pos);
+		
 		js_wait_for_input();
 
-		switch(__js_input) {
+		switch(input) {
 		case KEY_UP:
 			index--;
 			index = index < 0 ? count - 1 : index;

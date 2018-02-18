@@ -22,25 +22,25 @@
 	  {id | JS_BLOCK_FILLED, x2, y2}, {id | JS_BLOCK_FILLED, x3, y3} }
 
 static const jsShape shape_verticies[] = {
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationO, 1, 2, 2, 2, 1, 3, 2, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationI, 1, 0, 1, 1, 1, 2, 1, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationI, 0, 2, 1, 2, 2, 2, 3, 2) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationS, 2, 1, 1, 2, 2, 2, 1, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationS, 1, 2, 2, 2, 2, 3, 3, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationZ, 1, 1, 1, 2, 2, 2, 2, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationZ, 2, 2, 3, 2, 1, 3, 2, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationL, 1, 1, 2, 1, 1, 2, 1, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationL, 0, 1, 0, 2, 1, 2, 2, 2) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationL, 1, 1, 1, 2, 0, 3, 1, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationL, 0, 2, 1, 2, 2, 2, 2, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationJ, 1, 1, 2, 1, 2, 2, 2, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationJ, 1, 2, 2, 2, 3, 2, 1, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationJ, 2, 1, 2, 2, 2, 3, 3, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationJ, 3, 1, 1, 2, 2, 2, 3, 2) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 1, 2, 2, 2, 1, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 0, 2, 1, 2, 2, 2) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 0, 2, 1, 2, 1, 3) },
-	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationT, 0, 2, 1, 2, 2, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_O, 1, 2, 2, 2, 1, 3, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_I, 1, 0, 1, 1, 1, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_I, 0, 2, 1, 2, 2, 2, 3, 2) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_S, 2, 1, 1, 2, 2, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_S, 1, 2, 2, 2, 2, 3, 3, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_Z, 1, 1, 1, 2, 2, 2, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_Z, 2, 2, 3, 2, 1, 3, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_L, 1, 1, 2, 1, 1, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_L, 0, 1, 0, 2, 1, 2, 2, 2) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_L, 1, 1, 1, 2, 0, 3, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_L, 0, 2, 1, 2, 2, 2, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_J, 1, 1, 2, 1, 2, 2, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_J, 1, 2, 2, 2, 3, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_J, 2, 1, 2, 2, 2, 3, 3, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_J, 3, 1, 1, 2, 2, 2, 3, 2) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_T, 1, 1, 1, 2, 2, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_T, 1, 1, 0, 2, 1, 2, 2, 2) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_T, 1, 1, 0, 2, 1, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_T, 0, 2, 1, 2, 2, 2, 1, 3) },
 };
 
 typedef struct
@@ -209,11 +209,13 @@ static int __js_clear_rows(jsBoard *board)
 	int i, count = 0;
 	jsRow *rows = board->rows;
 
-	for(i = 0; i < JS_BOARD_ROW_AMOUNT; i++) {
+	for(i = 0; i < JS_BOARD_ROW_AMOUNT;) {
 		int j;
 
-		if(!__js_row_is_full(&board->rows[i]))
-			continue;		
+		if(!__js_row_is_full(&board->rows[i])) {
+			i++;
+			continue;
+		}
 
 		for(j = i; j < JS_BOARD_ROW_AMOUNT - 1; j++)
 			rows[j] = rows[j + 1];
@@ -250,7 +252,7 @@ static int __js_merge(jsBoard *board, const jsShape *shape)
 
 /// Set score to less than 0 if a successfull move shouldn't give any score.
 ///
-/// Returns the status the affected by the move.
+/// Returns the status affected by the move.
 static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double score)
 {
 	jsBoard *board = state->board;

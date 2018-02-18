@@ -133,13 +133,13 @@ typedef struct
 } jsShape;
 
 typedef enum {
-	jsShapeFormationO = 0x20000000,
-	jsShapeFormationI = 0x40000000,
-	jsShapeFormationS = 0x60000000,
-	jsShapeFormationZ = 0x80000000,
-	jsShapeFormationL = 0xA0000000,
-	jsShapeFormationJ = 0xC0000000,
-	jsShapeFormationT = 0xE0000000,
+	JS_SHAPE_FORMATION_O = 0x20000000,
+	JS_SHAPE_FORMATION_I = 0x40000000,
+	JS_SHAPE_FORMATION_S = 0x60000000,
+	JS_SHAPE_FORMATION_Z = 0x80000000,
+	JS_SHAPE_FORMATION_L = 0xA0000000,
+	JS_SHAPE_FORMATION_J = 0xC0000000,
+	JS_SHAPE_FORMATION_T = 0xE0000000,
 } jsShapeFormation;
 
 
