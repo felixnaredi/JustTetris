@@ -6,64 +6,64 @@
 
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "tetris.h"
 #include "build.h"
 
 #include "emacs_ac_break.h"
 
+
 #define JS_BLOCK_FILLED    0x00000001
-#define JS_BLOCK_TIME      0x1FFFFF00
 #define JS_BLOCK_FORMATION 0xE0000000
 
-static bool __drawEachFrame = false;
-static int __countdown = 0;
-static int __fullCountdown = 0;
-static int __score = 0;
-static jsShape __nextShape;
-
 #define JS_SHAPE_VERTICIES(id, x0, y0, x1, y1, x2, y2, x3, y3) \
-	{id | JS_BLOCK_FILLED, x0, y0, id | JS_BLOCK_FILLED, x1, y1, \
-	 id | JS_BLOCK_FILLED, x2, y2, id | JS_BLOCK_FILLED, x3, y3}
+	{ {id | JS_BLOCK_FILLED, x0, y0}, {id | JS_BLOCK_FILLED, x1, y1}, \
+	  {id | JS_BLOCK_FILLED, x2, y2}, {id | JS_BLOCK_FILLED, x3, y3} }
 
-static const jsShape __shape_verticies[] = {
-	JS_SHAPE_VERTICIES(jsShapeFormationO, 1, 2, 2, 2, 1, 3, 2, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationI, 1, 0, 1, 1, 1, 2, 1, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationI, 0, 2, 1, 2, 2, 2, 3, 2),
-	JS_SHAPE_VERTICIES(jsShapeFormationS, 2, 1, 1, 2, 2, 2, 1, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationS, 1, 2, 2, 2, 2, 3, 3, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationZ, 1, 1, 1, 2, 2, 2, 2, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationZ, 2, 2, 3, 2, 1, 3, 2, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationL, 1, 1, 2, 1, 1, 2, 1, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationL, 0, 1, 0, 2, 1, 2, 2, 2),
-	JS_SHAPE_VERTICIES(jsShapeFormationL, 1, 1, 1, 2, 0, 3, 1, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationL, 0, 2, 1, 2, 2, 2, 2, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationJ, 1, 1, 2, 1, 2, 2, 2, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationJ, 1, 2, 2, 2, 3, 2, 1, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationJ, 2, 1, 2, 2, 2, 3, 3, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationJ, 3, 1, 1, 2, 2, 2, 3, 2),
-	JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 1, 2, 2, 2, 1, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 0, 2, 1, 2, 2, 2),
-	JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 0, 2, 1, 2, 1, 3),
-	JS_SHAPE_VERTICIES(jsShapeFormationT, 0, 2, 1, 2, 2, 2, 1, 3),
+static const jsShape shape_verticies[] = {
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationO, 1, 2, 2, 2, 1, 3, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationI, 1, 0, 1, 1, 1, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationI, 0, 2, 1, 2, 2, 2, 3, 2) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationS, 2, 1, 1, 2, 2, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationS, 1, 2, 2, 2, 2, 3, 3, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationZ, 1, 1, 1, 2, 2, 2, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationZ, 2, 2, 3, 2, 1, 3, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationL, 1, 1, 2, 1, 1, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationL, 0, 1, 0, 2, 1, 2, 2, 2) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationL, 1, 1, 1, 2, 0, 3, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationL, 0, 2, 1, 2, 2, 2, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationJ, 1, 1, 2, 1, 2, 2, 2, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationJ, 1, 2, 2, 2, 3, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationJ, 2, 1, 2, 2, 2, 3, 3, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationJ, 3, 1, 1, 2, 2, 2, 3, 2) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 1, 2, 2, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 0, 2, 1, 2, 2, 2) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationT, 1, 1, 0, 2, 1, 2, 1, 3) },
+	{ {0, 0}, JS_SHAPE_VERTICIES(jsShapeFormationT, 0, 2, 1, 2, 2, 2, 1, 3) },
 };
 
 typedef struct
-{
+{	
 	int min;
-	int max;
+	int max;	
 } __jsRange;
 
-static const __jsRange __rot_ranges[] = {
+static const __jsRange rot_ranges[] = {
 	{0, 0}, {1, 2}, {3, 4}, {5, 6}, {7, 10}, {11, 14}, {15, 18}, 
 };
 
-#define JS_SHAPE_FORMATION_AMOUNT (sizeof(__rot_ranges) / sizeof(__rot_ranges[0]))
+#define JS_SHAPE_FORMATION_AMOUNT (sizeof(rot_ranges) / sizeof(rot_ranges[0]))
+
+static int __js_timer(int level)
+{	
+	return 120 / level;
+}
 
 /// Resets the countdown timer.
-static void __js_reset_countdown()
+static void __js_reset_countdown(jsTetrisState *state)
 {	
-	__countdown = __fullCountdown;
+	state->countdown = state->timer;
 }
 
 /// Returns an empty block.
@@ -96,16 +96,63 @@ static jsBoard __js_empty_board()
 	return board;
 }
 
-/// Returns an empty board.
-jsBoard js_empty_board()
+static jsShape __js_gen_shape()
 {
-	jsBoard board;
-	int i;
+	__jsRange form = rot_ranges[rand() % JS_SHAPE_FORMATION_AMOUNT];
+	return shape_verticies[form.min];
+}
+	
+/// Allocates the size of type to var. If allocation fails it jumps to
+/// the label err. Therefor must functions using JS_ALLOC provide an
+/// err label.
+#define JS_ALLOC(var, type, err) \
+	var = malloc(sizeof(type)); \
+	if(var == NULL) goto err
 
-	for(i = 0; i < JS_BOARD_ROW_AMOUNT; i++)
-		board.rows[i] = __js_empty_row();
+/// Frees var as long as it isn't NULL.
+#define JS_DEALLOC(var) if(var != NULL) free(var)
 
-	return board;
+/// Allocates a jsTetrisState.
+///
+/// Returns pointer to the allocated structure or NULL if failure.
+jsTetrisState *js_alloc_tetris_state()
+{
+	jsTetrisState *state;
+
+	JS_ALLOC(state, jsTetrisState, err);
+	JS_ALLOC(state->board, jsBoard, err);
+	JS_ALLOC(state->shape, jsShape, err);
+	JS_ALLOC(state->next_shape, jsShape, err);
+
+	return state;
+err:
+	JS_DEBUG_PUTS(js_alloc_tetris_state, "failed alloc");
+	js_dealloc_tetris_state(state);
+
+	return NULL;
+}
+
+/// Deallocates a jsTetrisState.
+void js_dealloc_tetris_state(jsTetrisState *state)
+{
+	JS_DEALLOC(state->next_shape);
+	JS_DEALLOC(state->shape);
+	JS_DEALLOC(state->board);
+	JS_DEALLOC(state);
+}
+
+/// Initailizes a jsTetrisState as it is at a new game.
+void js_init_tetris_state(jsTetrisState *state)
+{
+	state->status = 0;
+	*state->board = __js_empty_board();
+	*state->shape = __js_gen_shape();
+	*state->next_shape = __js_gen_shape();
+	state->rows = 0;
+	state->level = 1;
+	state->score = 0;
+	state->timer = __js_timer(1);
+	__js_reset_countdown(state);
 }
 
 /// Returns true if the block is empty.
@@ -114,14 +161,13 @@ static bool __js_block_is_empty(jsBlock block)
 	return !(block.status & JS_BLOCK_FILLED);
 }
 
-
 /// Returns true if the block is empty.
 bool js_block_is_empty(jsBlock block)
 {
 	return !(block.status & JS_BLOCK_FILLED);
 }
 
-/// Returns true if every block in row is non empty.
+/// Returns true if every block in row is not empty.
 static bool __js_row_is_full(const jsRow *row)
 {
 	int i;
@@ -136,7 +182,7 @@ static bool __js_row_is_full(const jsRow *row)
 }
 
 /// Returns true if at least one of the blocks in shape are at the
-/// same position as a non empty one in board.
+/// same position as a non empty block in board.
 static bool __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i offset)
 {
 	int i;
@@ -177,4 +223,141 @@ static int __js_clear_rows(jsBoard *board)
 	}
 
 	return count;
+}
+
+/// Adds each block from shape, that is inside board, to board.
+//
+/// Returns the amount of blocks that are outside board.
+static int __js_merge(jsBoard *board, const jsShape *shape)
+{
+	int i, count = 0;
+	const jsBlock *blocks = shape->blocks;
+
+	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {
+		jsBlock block = blocks[i];
+		jsVec2i pos = js_vec2i_add(block.position, shape->offset);
+		
+		if(pos.y >= JS_BOARD_ROW_AMOUNT || pos.x >= JS_BOARD_COLUMN_AMOUNT) {
+			count++;
+			continue;
+		}
+
+		board->pos[pos.y][pos.x] = block;
+	}
+
+	return count;
+}
+
+/// Set score to less than 0 if a successfull move shouldn't give any score.
+///
+/// Returns the status the affected by the move.
+static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double score)
+{
+	jsBoard *board = state->board;
+	jsShape *shape = state->shape, *next_shape = state->next_shape;
+	int rows, new_rows, old_level, new_level, status = 0;
+	bool overlapp = __js_overlapp(board, shape, offset);
+
+	if(!overlapp) {
+		__js_reset_countdown(state);
+		shape->offset = js_vec2i_add(shape->offset, offset);
+
+		status |= JS_STATE_SHAPE_CHANGE | JS_STATE_RESET_COUNTDOWN;
+
+		if(score < 0)
+			return status;
+
+		// state->score += score * __js_level_multiplier(level);
+		status |= JS_STATE_SCORE_CHANGE;
+
+		return status;
+	}
+
+	if(!freeze)
+		return 0;       
+		
+	__js_merge(board, shape);
+
+	*shape = *next_shape;
+	*next_shape = __js_gen_shape();
+
+	status |= JS_STATE_SHAPE_CHANGE | JS_STATE_BOARD_CHANGE | JS_STATE_NEXT_SHAPE_CHANGE;
+
+	rows = __js_clear_rows(board);
+		
+	// if(__js_game_over(board, shape))
+	// 	status |= JS_STATE_GAME_OVER;
+
+	if(rows == 0)
+		return status;
+		
+	new_rows = state->rows + rows;
+		
+	old_level = state->level;
+	// new_level = __js_get_level(new_rows);
+
+	state->rows = new_rows;
+	state->level = new_level;
+	// state->score += __js_score_rows(rows, new_level);
+
+	status |= JS_STATE_ROWS_CHANGE | JS_STATE_SCORE_CHANGE;
+	status |= new_level == old_level ? 0 : JS_STATE_LEVEL_CHANGE;
+
+	return status;
+}
+
+#ifdef JS_DEBUG
+
+/// Returns true if one or more non nullable pointers of state is
+/// NULL.
+static bool __js_debug_nonnull_state(const jsTetrisState *state)
+{
+	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state);
+	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->board);
+	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->shape);
+	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->next_shape);
+
+	return state == NULL || state->board == NULL || state->shape == NULL || state->next_shape == NULL;
+}
+
+#endif /* JS_DEBUG */
+	
+/// Moves the shape on the board of state. If the offsets y value is
+/// negative the move will generate score on success and 'freeze' the
+/// shape on overlap.
+void js_move_shape(jsTetrisState *state, jsVec2i offset)
+{
+#ifdef JS_DEBUG
+
+	if(__js_debug_nonnull_state(state)) {
+		JS_DEBUG_PUTS(js_move_shape, "state may not include NULL");
+		return;
+	}
+#endif /* JS_DEBUG */       
+	
+	bool freeze = false;
+	double score = -1.0;
+
+	if(offset.y < 0) {
+		freeze = true;
+		score = 0.3;
+	}
+
+	state->status |= __js_move(state, offset, freeze, score);
+}
+
+/// Moves the shape on the board of state with force. A forced move is
+/// never worth any score and if it overlaps it will always 'freeze'
+/// the shape.
+void js_force_shape(jsTetrisState *state, jsVec2i offset)
+{
+#ifdef JS_DEBUG
+
+	if(__js_debug_nonnull_state(state)) {
+		JS_DEBUG_PUTS(js_force_shape, "state may not include NULL");
+		return;
+	}
+#endif /* JS_DEBUG */       
+	
+	state->status |= __js_move(state, offset, true, -1);
 }

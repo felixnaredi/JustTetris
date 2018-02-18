@@ -218,13 +218,13 @@ def shape_verticies
 	'jsShapeFormationJ',
 	'jsShapeFormationT',
   ]
-  puts 'static const jsShape __shape_verticies[] = {'
+  puts 'static const jsShape shape_verticies[] = {'
   SHAPES.each { |form|
     fn = forms.shift
-    form.each { |shape|
-      print "\tJS_SHAPE_VERTICIES(#{fn}, "
+    form.each { |shape|      
+      print "\t{ {0, 0}, JS_SHAPE_VERTICIES(#{fn}, "
       print points_from_rows(shape).map { |p| "#{p[:x]}, #{p[:y]}"}.join ', '
-      puts "),"
+      puts ") },"
     }
   }
   puts '};'

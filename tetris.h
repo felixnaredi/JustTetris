@@ -20,7 +20,7 @@
 //   |       |
 //  (false) (true)
 //   |          |
-//   |          o----------------------------o
+//   |          +----------------------------+
 //   |                                       |
 //   input buffer                            |
 //   |          |                            |
@@ -32,13 +32,13 @@
 //   |              |                        |
 //   |              try move shape           |
 //   |              |            |           |
-//   |             (false)      (true)       o-------o
+//   |             (false)      (true)       +-------+
 //   |              |   |           |                |
 //   o--------(ignore) (freeze)     reset countdown  |
 //   |                  |           |                |
 //   |                  |           move shape       |
 //   |                  |                    |       |
-//   |                  o--------------------|-------o
+//   |                  o--------------------|-------+
 //   |                  |                    |
 //   |                  add to board         |
 //   |                  |                    |
@@ -48,11 +48,11 @@
 //  (no)        (yes)   |                    |
 //   |           |      set game over        |
 //   |           |      |                    |
-//   |           o------o--------------------o
+//   |           o------o--------------------+
 //   |           |
 //   |      redraw
 //   |      |
-//   o------o
+//   o------+
 //   |
 //   next cycle
 //
@@ -100,14 +100,6 @@ jsVec3f js_vec3f_add(jsVec3f a, jsVec3f b);
 
 typedef struct
 {
-	float r;
-	float g;
-	float b;
-} jsColor;
-
-
-typedef struct
-{
 	int status;
 	jsVec2i position;
 } jsBlock;
@@ -131,7 +123,6 @@ typedef union
 	jsRow rows[JS_BOARD_ROW_AMOUNT];
 } jsBoard;
 
-jsBoard js_empty_board();
 
 #define JS_SHAPE_BLOCK_AMOUNT 4
 
@@ -150,6 +141,42 @@ typedef enum {
 	jsShapeFormationJ = 0xC0000000,
 	jsShapeFormationT = 0xE0000000,
 } jsShapeFormation;
+
+
+typedef struct
+{
+	int status;
+	jsBoard *board;
+	jsShape *shape;
+	jsShape *next_shape;
+	int rows;
+	int level;
+	double score;
+	int countdown;
+	int timer;
+} jsTetrisState;
+
+jsTetrisState *js_alloc_tetris_state();
+void js_dealloc_tetris_state(jsTetrisState *state);
+void js_init_tetris_state(jsTetrisState *state);
+
+#define JS_STATE_SHAPE_CHANGE      0x00000001
+#define JS_STATE_BOARD_CHANGE      0x00000002
+#define JS_STATE_NEXT_SHAPE_CHANGE 0x00000004
+#define JS_STATE_ROWS_CHANGE       0x00000008
+#define JS_STATE_LEVEL_CHANGE      0x00000010
+#define JS_STATE_SCORE_CHANGE      0x00000020
+#define JS_STATE_RESET_COUNTDOWN   0x00000040
+#define JS_STATE_GAME_OVER         0x00000080
+#define JS_STATE_DIRTY             0x00000100
+
+#define JS_STATE_CHANGE \
+	(JS_STATE_SHAPE_CHANGE | JS_STATE_BOARD_CHANGE | JS_STATE_NEXT_SHAPE_CHANGE \
+	 JS_STATE_ROWS_CHANGE | JS_STATE_LEVEL_CHANGE | JS_STATE_SCORE_CHANGE)
+
+void js_move_shape(jsTetrisState *state, jsVec2i offset);
+void js_force_shape(jsTetrisState *state, jsVec2i offset);
+// void js_rotate_shape(jsTetrisState *state, int rot);
 
 
 #endif /* TETRIS_TYPES_H */
