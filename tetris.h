@@ -57,6 +57,9 @@
 //   next cycle
 //
 
+#define js_max(a, b) (a > b ? a : b)
+#define js_min(a, b) (a < b ? a : b)
+#define js_abs(a) (a < 0 ? -a : a)
 
 typedef struct
 {
@@ -109,6 +112,7 @@ typedef struct
 	jsVec2i position;
 } jsBlock;
 
+bool js_block_is_empty(jsBlock block);
 
 #define JS_BOARD_ROW_AMOUNT 20
 #define JS_BOARD_COLUMN_AMOUNT 10
@@ -119,11 +123,15 @@ typedef struct
 	jsBlock blocks[JS_BOARD_COLUMN_AMOUNT];
 } jsRow;
 
-typedef struct
+
+typedef union
 {
+	jsBlock pos[JS_BOARD_ROW_AMOUNT][JS_BOARD_COLUMN_AMOUNT];
+	jsBlock blocks[JS_BOARD_ROW_AMOUNT * JS_BOARD_COLUMN_AMOUNT];
 	jsRow rows[JS_BOARD_ROW_AMOUNT];
 } jsBoard;
 
+jsBoard js_empty_board();
 
 #define JS_SHAPE_BLOCK_AMOUNT 4
 

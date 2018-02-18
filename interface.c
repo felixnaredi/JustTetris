@@ -22,6 +22,7 @@ bool js_init_interface()
 {	
 	initscr();
 	raw();
+	keypad(stdscr, TRUE);
 	noecho();
 
 	start_color();
@@ -61,7 +62,7 @@ static void __draw_title_window(jsVec2i pos)
 	jsVec2i margin = {3, 1};
 
 	width = strlen(title) + margin.x * 2;
-	window = newwin(3, width, pos.y, pos.x - width / 2);
+	window = newwin(3, width, pos.y, pos.x);
 
 	init_pair(1, COLOR_RED, COLOR_BLUE);
 	wattrset(window, A_BOLD);
@@ -77,10 +78,10 @@ static void __draw_title_window(jsVec2i pos)
 typedef struct
 {
 	char *name;
-	void (*on_enter)(int);
-} jsMenuItem;
+	void (*select)(void *sender);
+} __jsMenuItem;
 
-static void __draw_menu_item(const jsMenuItem *item, jsVec2i pos, bool selected)
+static void __draw_menu_item(const __jsMenuItem *item, jsVec2i pos, bool selected)
 {
 	const char *name = item->name;
 	WINDOW *window = newwin(1, strlen(name), pos.y, pos.x);
@@ -95,7 +96,7 @@ static void __draw_menu_item(const jsMenuItem *item, jsVec2i pos, bool selected)
 	delwin(window);
 }
 
-static void __draw_menu_items(const jsMenuItem *items, int count, int index, jsVec2i pos)
+static void __draw_menu_items(const __jsMenuItem *items, int count, int index, jsVec2i pos)
 {
 	int i;
 
@@ -105,26 +106,37 @@ static void __draw_menu_items(const jsMenuItem *items, int count, int index, jsV
 	}
 }
 
+static void __item_name(void *sender)
+{
+	__jsMenuItem *item = (__jsMenuItem *) sender;
+	JS_DEBUG_VALUE(__item_name, item->name, "%s");
+}
+
+static void __quit_program(void *sender)
+{	
+	js_set_program_quit(true);
+}
+
 void js_draw_main_menu()
 {
 	int cx;
 	jsVec2i title_pos = {0, 2}, menu_pos = {0, 6};
 
-	jsMenuItem items[] = {
-		{"First Item", NULL},
-		{"Second Item", NULL},
+	__jsMenuItem items[] = {
+		{"New Game", __item_name},
+		{"Quit", __quit_program},
 	};
 	int index = 0, count = 2;
 	
 	cx = getmaxx(stdscr) / 2;
+	cx = cx > 11 ? 11 : cx;
 	
 	title_pos.x = cx;
-	menu_pos.x = cx - 10;
-
-	JS_DEBUG_VALUE(js_draw_main_menu, KEY_UP, "%d");
-	JS_DEBUG_VALUE(js_draw_main_menu, KEY_DOWN, "%d");
+	menu_pos.x = js_max(cx - 5, 3);
 
 	while(!js_program_will_quit()) {
+		__jsMenuItem item = items[index];
+		
 		clear();
 		refresh();
 
@@ -132,15 +144,22 @@ void js_draw_main_menu()
 		__draw_menu_items(items, count, index, menu_pos);		
 	
 		js_wait_for_input();
-		JS_DEBUG_VALUE(js_draw_main_menu, __js_input, "%d");
 
 		switch(__js_input) {
 		case KEY_UP:
 			index--;
-			index = index < 0 ? count : index;
+			index = index < 0 ? count - 1 : index;
 			break;
 		case KEY_DOWN:
 			index = (index + 1) % count;
+			break;
+		case KEY_ENTER:
+		case '\n':			
+			if(item.select == NULL)
+				break;
+
+			item.select(&item);
+			
 			break;
 		default:
 			break;

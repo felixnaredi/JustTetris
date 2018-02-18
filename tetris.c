@@ -26,18 +26,12 @@ static int __score = 0;
 static jsShape __nextShape;
 
 
-/// static void
-/// __js_reset_countdown
-///
 /// Resets the countdown timer.
 static void __js_reset_countdown()
 {	
 	__countdown = __fullCountdown;
 }
 
-/// static jsBlock
-/// __js_empty_block
-///
 /// Returns an empty block.
 static jsBlock __js_empty_block()
 {
@@ -59,9 +53,6 @@ static jsRow __js_empty_row()
 	return row;
 }
 
-/// static jsBoard
-/// __js_empty_board
-///
 /// Returns an empty board.
 static jsBoard __js_empty_board()
 {
@@ -74,18 +65,31 @@ static jsBoard __js_empty_board()
 	return board;
 }
 
-/// static bool
-/// __js_block_is_empty
-///
+/// Returns an empty board.
+jsBoard js_empty_board()
+{
+	jsBoard board;
+	int i;
+
+	for(i = 0; i < JS_BOARD_ROW_AMOUNT; i++)
+		board.rows[i] = __js_empty_row();
+
+	return board;
+}
+
 /// Returns true if the block is empty.
-static bool __js_block_is_empty(const jsBlock block)
+static bool __js_block_is_empty(jsBlock block)
 {
 	return !(block.status & JS_BLOCK_COLOR_FILLED);
 }
 
-/// static bool
-/// __js_row_full
-///
+
+/// Returns true if the block is empty.
+bool js_block_is_empty(jsBlock block)
+{
+	return !(block.status & JS_BLOCK_COLOR_FILLED);
+}
+
 /// Returns true if every block in row is non empty.
 static bool __js_row_is_full(const jsRow *row)
 {
@@ -100,9 +104,6 @@ static bool __js_row_is_full(const jsRow *row)
 	return true;
 }
 
-/// static bool
-/// __js_overlapp
-///
 /// Returns true if at least one of the blocks in shape are at the
 /// same position as a non empty one in board.
 static bool __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i offset)
@@ -114,16 +115,13 @@ static bool __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i of
 		jsVec2i blockPos = js_vec2i_add(blocks[i].position, shape->offset);
 		jsVec2i pos = js_vec2i_add(blockPos, offset);
 
-		if(!__js_block_is_empty(board->rows[pos.y].blocks[pos.x]))
+		if(!__js_block_is_empty(board->pos[pos.y][pos.x]))
 			return true;
 	}
 
 	return false;
 }
 
-/// static int
-/// __js_clear_rows
-///
 /// Clears all full rows in board. By clearing a row, all rows above
 /// the cleared row will be lowered one step, the top row will be
 /// set to an empty row.

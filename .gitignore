@@ -2,3 +2,5 @@
 *~
 .backup
 log
+*_log
+playground/Makefile

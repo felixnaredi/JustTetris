@@ -16,12 +16,13 @@ static FILE *__js_debug_file = NULL;
 
 static size_t __js_now(char *des, size_t len)
 {
-	time_t now = time(NULL);
+ 	time_t now = time(NULL);
+ 
+ 	return strftime(des, len, "[%F %X]", localtime(&now));
+}
 
-	return strftime(des, len, "[%F %X]", localtime(&now));
-}	
-
-int js_debug_init_log(char *path) {
+int js_debug_init_log(char *path) 
+{
 	char now[32];
 
 	if(__js_debug_file != NULL)
@@ -38,7 +39,7 @@ int js_debug_init_log(char *path) {
 		return 0;
 	}
 
-	__js_now(now, sizeof(now));
+	__js_now(now, sizeof(now));	
 	
 	fprintf(__js_debug_file, "-------- LOG INITIATED %s --------\n", now);
 
@@ -57,6 +58,7 @@ int js_debug_close_log()
 	fprintf(__js_debug_file, "-------- LOG CLOSED %s --------\n\n", now);
 	
 	fclose(__js_debug_file);
+	__js_debug_file = NULL;
 
 	return 1;
 }
@@ -68,9 +70,9 @@ int __js_debug_print(const char *func, const char *file, int line, const char *f
 
 	va_start(args, format);
 	vsprintf(msg, format, args);
-
+	
 	__js_now(now, sizeof(now));
-
+	
 	return fprintf(__js_debug_file, "%s DEBUG %s (%s, %d) - %s\n",
 		       now, func, file, line, msg);
 }

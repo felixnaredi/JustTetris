@@ -6,7 +6,6 @@
 
 #include "tetris.h"
 
-
 int js_vec2i_equal(jsVec2i a, jsVec2i b)
 {
 	return a.x == b.x && a.y == b.y;
