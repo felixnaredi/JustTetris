@@ -210,13 +210,13 @@ end
 
 def shape_verticies
   forms = [
-    	'jsShapeFormationO',
-	'jsShapeFormationI',
-	'jsShapeFormationS',
-	'jsShapeFormationZ',
-	'jsShapeFormationL',
-	'jsShapeFormationJ',
-	'jsShapeFormationT',
+    	'JS_SHAPE_FORMATION_O',
+	'JS_SHAPE_FORMATION_I',
+	'JS_SHAPE_FORMATION_S',
+	'JS_SHAPE_FORMATION_Z',
+	'JS_SHAPE_FORMATION_L',
+	'JS_SHAPE_FORMATION_J',
+	'JS_SHAPE_FORMATION_T',
   ]
   puts 'static const jsShape shape_verticies[] = {'
   SHAPES.each { |form|
