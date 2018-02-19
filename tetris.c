@@ -100,6 +100,9 @@ static jsBoard __js_empty_board()
 static jsShape __js_gen_shape()
 {
 	__jsRange form = rot_ranges[rand() % JS_SHAPE_FORMATION_AMOUNT];
+
+	JS_DEBUG_VALUE(__js_gen_shape, form.min, "%d");
+	
 	return shape_verticies[form.min];
 }
 	
@@ -182,8 +185,15 @@ static bool __js_row_is_full(const jsRow *row)
 	return true;
 }
 
+static bool __js_outside_board(jsVec2i pos)
+{
+	return pos.x < 0 || pos.y < 0 ||
+		pos.x >= JS_BOARD_COLUMN_AMOUNT || pos.y >= JS_BOARD_ROW_AMOUNT;
+}
+
 /// Returns true if at least one of the blocks in shape are at the
-/// same position as a non empty block in board.
+/// same position as a non empty block in board or if at least one
+/// block in shape are outside the bounds of board.
 static bool __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i offset)
 {
 	int i;
@@ -192,6 +202,9 @@ static bool __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i of
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {
 		jsVec2i blockPos = js_vec2i_add(blocks[i].position, shape->offset);
 		jsVec2i pos = js_vec2i_add(blockPos, offset);
+
+		if(__js_outside_board(pos))
+			return true;
 
 		if(!__js_block_is_empty(board->pos[pos.y][pos.x]))
 			return true;

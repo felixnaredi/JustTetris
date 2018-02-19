@@ -15,95 +15,120 @@
 #include "../emacs_ac_break.h"
 
 
-static int fill_random_board(jsBoard *board)
+static void draw_board(const jsBoard *board, WINDOW *window)
 {
-	int i, count = 0;
-	jsBlock *blocks = board->blocks;
-
-	for(i = 0; i < JS_BOARD_BLOCK_AMOUNT; i++) {
-		if(rand() % 4 == 0) {
-			// JS_DEBUG_VALUE(fill_random_board, i, "%d");
-			
-			blocks[i].status = -1;
-			count++;
-		}
-	}
-
-	return count;
-}
-
-static void draw_board(const jsBoard *board, jsVec2i orig)
-{
-	WINDOW *border_window, *board_window;	
-	int x, y;
+	int y, x;
 	const jsBlock *blocks = board->blocks;	
 	
-	border_window = newwin(JS_BOARD_ROW_AMOUNT + 2, JS_BOARD_COLUMN_AMOUNT + 2,
-			       orig.y, orig.x);
-	box(border_window, 0, 0);
-	
-	wrefresh(border_window);
-	delwin(border_window);
-
-	board_window = newwin(JS_BOARD_ROW_AMOUNT, JS_BOARD_COLUMN_AMOUNT,
-			      orig.y + 1, orig.x + 1);
-	
 	init_pair(1, COLOR_BLUE, COLOR_RED);
-	wattrset(board_window, COLOR_PAIR(1));
+	wattrset(window, COLOR_PAIR(1));
 
 	for(y = 0; y < JS_BOARD_ROW_AMOUNT; y++) {
 		for(x = 0; x < JS_BOARD_COLUMN_AMOUNT; x++) {
+			int yp, xp;
+
+			yp = JS_BOARD_ROW_AMOUNT - 1 - y;
+			xp = x;
+			
 			if(!js_block_is_empty(board->pos[y][x]))
-				mvwaddch(board_window, y, x, '#');
+				mvwaddch(window, yp, xp, '#');
 		}
-	}	
-
-	wrefresh(board_window);
-	delwin(board_window);
+	}
 }
-	
 
+static void draw_shape(const jsShape *shape, WINDOW *window)
+{
+	int i;
+	jsVec2i offset = shape->offset;
+	const jsBlock *blocks = shape->blocks;
+
+	init_pair(2, COLOR_RED, COLOR_YELLOW);
+	wattrset(window, COLOR_PAIR(2));
+
+	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {		
+		int x, y;
+		jsBlock block = blocks[i];
+
+		y = JS_BOARD_ROW_AMOUNT - offset.y - 1 - block.position.y;
+		x = offset.x + block.position.x;
+		
+		mvwaddch(window, y, x, '#');
+	}
+}
+
+static void draw_state(const jsTetrisState *state, jsVec2i orig)
+{
+	WINDOW *border, *board;
+
+	border = newwin(JS_BOARD_ROW_AMOUNT + 2, JS_BOARD_COLUMN_AMOUNT + 2, orig.y, orig.x);
+	box(border, 0, 0);
+
+	wrefresh(border);
+	delwin(border);
+
+	board = newwin(JS_BOARD_ROW_AMOUNT, JS_BOARD_COLUMN_AMOUNT, orig.y + 1, orig.x + 1);
+
+	draw_board(state->board, board);
+	draw_shape(state->shape, board);
+
+	wrefresh(board);
+	delwin(board);
+}
 
 int main(int argc, char *argv[])
 {
-	jsBoard board;
-	int count, c = 0;
+	jsTetrisState *state;
+	int input;
 	
 #ifdef JS_DEBUG
-	js_debug_init_log("drawboard_log");
+	js_debug_init_log("log_drawboard");
 #endif // JS_DEBUG
 
 	srand(time(NULL));
 	
+	state = js_alloc_tetris_state();
+	if(state == NULL) {
+		fprintf(stderr, "failed to init state");
+		return -1;
+	}	
+	
+	js_init_tetris_state(state);
+	
 	initscr();
 	raw();
 	noecho();
+	curs_set(0);
 	keypad(stdscr, TRUE);
 	start_color();
 
 	addstr("JUST TETRIS");
 	refresh();
 
-	while(c < 3) {
-		board = js_empty_board();
+	do {
+		draw_state(state, (jsVec2i) {2, 2});
 		
-		// count = fill_random_board(&board);	
-		// JS_DEBUG_VALUE(main, count, "%d");
+		input = getch();
 
-		board.pos[1 + c][2].status = -1;
-		board.pos[2 + c][3].status = -1;
-		board.pos[3 + c][4].status = -1;
-		board.pos[4 + c][5].status = -1;
-	
-		draw_board(&board, (jsVec2i) {2, 2});
-
-		getch();
-
-		JS_DEBUG_VALUE(main, c, "%d");
-		c++;
-	}
+		switch(input) {
+		case KEY_UP:
+			js_move_shape(state, (jsVec2i) {0, 1});
+			break;
+		case KEY_DOWN:
+			js_move_shape(state, (jsVec2i) {0, -1});
+			break;
+		case KEY_RIGHT:
+			js_move_shape(state, (jsVec2i) {1, 0});
+			break;
+		case KEY_LEFT:
+			js_move_shape(state, (jsVec2i) {-1, 0});
+			break;
+		default:
+			break;
+		}
+	} while(input != 'q');
 
 	endwin();
+	js_dealloc_tetris_state(state);
 
 #ifdef JS_DEBUG
 	js_debug_close_log();

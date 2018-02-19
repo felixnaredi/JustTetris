@@ -123,7 +123,8 @@ typedef union
 	jsRow rows[JS_BOARD_ROW_AMOUNT];
 } jsBoard;
 
-
+#define JS_SHAPE_ROW_AMOUNT 4
+#define JS_SHAPE_COLUMN_AMOUNT 4
 #define JS_SHAPE_BLOCK_AMOUNT 4
 
 typedef struct
