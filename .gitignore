@@ -1,5 +1,7 @@
 *.o
 *~
 .backup
-glpp
-
+log
+*_log
+log_*
+playground/Makefile
