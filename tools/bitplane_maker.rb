@@ -152,18 +152,6 @@ SHAPES = [
   ],
 ]
 
-def bits_from_rows(rows)
-  def bits_from_row(row)
-    row.to_a.inject({:value => 0, :index => 0}) do |s,c|
-      s[:value] |= (1 << 31) >> s[:index] if c == '1'
-      s[:index] += 1
-      s
-    end[:value]
-  end
-  a = Array.new(4 - rows.count, 0)
-  (a + rows.map { |row| bits_from_row(row) }).reverse
-end
-
 def points_from_rows(rows)
   def points_from_row(row)
     ret = []
@@ -175,16 +163,6 @@ def points_from_rows(rows)
     e.each { |px| ret.push({:x => px, :y => i}) }
   end
   ret
-end
-
-def print_shape_bitplanes()
-  puts "static const int shapeBitplanes[19][4] = {"
-  SHAPES.flatten(1).each do |shape|
-    print "\t{"
-    print bits_from_rows(shape).each.map { |row| hexf(row) }.join(", ")
-    puts "},"
-  end
-  puts "};"
 end
 
 def print_shape_points
@@ -209,6 +187,24 @@ def print_rot_ranges(varname = 'rotRanges', datatype = 'int')
 end
 
 def shape_verticies
+
+  def rect(points)
+    xs = points.reduce([]) { |s, p| s.push p[:x] }
+    x_min = xs.min
+    x_max = xs.max
+    
+    ys = points.reduce([]) { |s, p| s.push p[:y] }
+    y_min = ys.min
+    y_max = ys.max
+
+    {
+      :w => x_max - x_min,
+      :h => y_max - y_min,
+      :x => x_min,
+      :y => y_min
+    }
+  end
+  
   forms = [
     	'JS_SHAPE_FORMATION_O',
 	'JS_SHAPE_FORMATION_I',
@@ -221,9 +217,11 @@ def shape_verticies
   puts 'static const jsShape shape_verticies[] = {'
   SHAPES.each { |form|
     fn = forms.shift
-    form.each { |shape|      
-      print "\t{ {0, 0}, JS_SHAPE_VERTICIES(#{fn}, "
-      print points_from_rows(shape).map { |p| "#{p[:x]}, #{p[:y]}"}.join ', '
+    form.each { |shape|
+      ps = points_from_rows shape
+      r = rect ps
+      print "\t{ {#{5 - r[:x] - r[:w] / 2}, #{19 - r[:y] - r[:h]}}, JS_SHAPE_VERTICIES(#{fn}, "
+      print ps.map { |p| "#{p[:x]}, #{p[:y]}"}.join ', '
       puts ") },"
     }
   }

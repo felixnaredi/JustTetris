@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	js_draw_main_menu();
+	js_draw_main_menu();       
 
 	js_free_interface();
 	printf("Program will quit\n");
