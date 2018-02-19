@@ -198,8 +198,8 @@ def shape_verticies
     y_max = ys.max
 
     {
-      :w => x_max - x_min,
-      :h => y_max - y_min,
+      :w => x_max - x_min + 1,
+      :h => y_max - y_min + 1,
       :x => x_min,
       :y => y_min
     }
@@ -220,7 +220,8 @@ def shape_verticies
     form.each { |shape|
       ps = points_from_rows shape
       r = rect ps
-      print "\t{ {#{5 - r[:x] - r[:w] / 2}, #{19 - r[:y] - r[:h]}}, JS_SHAPE_VERTICIES(#{fn}, "
+      print "\t{ {#{5 - r[:x] - r[:w] / 2}, #{20 - r[:y] - r[:h]}}, "
+      print "JS_SHAPE_VERTICIES(#{fn}, "
       print ps.map { |p| "#{p[:x]}, #{p[:y]}"}.join ', '
       puts ") },"
     }
