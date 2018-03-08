@@ -1,5 +1,5 @@
 
-// 
+//
 // Filename: tetris.c
 // Created: 2018-02-13 20:57:53 +0100
 // Author: Felix Nared
@@ -18,11 +18,17 @@
 #define JS_BLOCK_FILLED    0x00000001
 #define JS_BLOCK_FORMATION 0xE0000000
 
+typedef struct
+{
+	jsVec2i offset;
+	const jsBlock blocks[JS_SHAPE_BLOCK_AMOUNT];
+} __jsShapeData;
+
 #define JS_SHAPE_VERTICIES(id, x0, y0, x1, y1, x2, y2, x3, y3) \
 	{ {id | JS_BLOCK_FILLED, x0, y0}, {id | JS_BLOCK_FILLED, x1, y1}, \
 	  {id | JS_BLOCK_FILLED, x2, y2}, {id | JS_BLOCK_FILLED, x3, y3} }
 
-static const jsShape shape_verticies[] = {
+static const __jsShapeData shape_data[] = {
 	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_O, 1, 2, 2, 2, 1, 3, 2, 3) },
 	{ {4, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_I, 1, 0, 1, 1, 1, 2, 1, 3) },
 	{ {3, 17}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_I, 0, 2, 1, 2, 2, 2, 3, 2) },
@@ -45,25 +51,25 @@ static const jsShape shape_verticies[] = {
 };
 
 typedef struct
-{	
+{
 	int min;
-	int max;	
+	int max;
 } __jsRange;
 
 static const __jsRange rot_ranges[] = {
-	{0, 0}, {1, 2}, {3, 4}, {5, 6}, {7, 10}, {11, 14}, {15, 18}, 
+	{0, 0}, {1, 2}, {3, 4}, {5, 6}, {7, 10}, {11, 14}, {15, 18},
 };
 
 #define JS_SHAPE_FORMATION_AMOUNT (sizeof(rot_ranges) / sizeof(rot_ranges[0]))
 
 static int __js_timer(int level)
-{	
+{
 	return 120 / level;
 }
 
 /// Resets the countdown timer.
 static void __js_reset_countdown(jsTetrisState *state)
-{	
+{
 	state->countdown = state->timer;
 }
 
@@ -97,15 +103,25 @@ static jsBoard __js_empty_board()
 	return board;
 }
 
-static jsShape __js_gen_shape()
+/// Makes a shape from the given index, corresponding to the data in
+/// 'shape_data'.
+///
+/// Returns the shape for the index.
+static jsShape __js_make_shape(int index)
 {
-	__jsRange form = rot_ranges[rand() % JS_SHAPE_FORMATION_AMOUNT];
+	const __jsShapeData *shapeData = &shape_data[index];
 
-	JS_DEBUG_VALUE(__js_gen_shape, form.min, "%d");
-	
-	return shape_verticies[form.min];
+	return (jsShape) {shapeData->offset, index, shapeData->blocks};
 }
-	
+
+/// Generates a random index of a shape pointing to the first shape of a form.
+///
+/// Returns a index to be used in 'shape_data'.
+static int __js_gen_shape_index()
+{
+	return rot_ranges[rand() % JS_SHAPE_FORMATION_AMOUNT].min;
+}
+
 /// Allocates the size of type to var. If allocation fails it jumps to
 /// the label err. Therefor must functions using JS_ALLOC provide an
 /// err label.
@@ -150,8 +166,8 @@ void js_init_tetris_state(jsTetrisState *state)
 {
 	state->status = 0;
 	*state->board = __js_empty_board();
-	*state->shape = __js_gen_shape();
-	*state->next_shape = __js_gen_shape();
+	*state->shape = __js_make_shape(__js_gen_shape_index());
+	*state->next_shape = __js_make_shape(__js_gen_shape_index());
 	state->rows = 0;
 	state->level = 1;
 	state->score = 0;
@@ -194,14 +210,15 @@ static bool __js_outside_board(jsVec2i pos)
 /// Returns true if at least one of the blocks in shape are at the
 /// same position as a non empty block in board or if at least one
 /// block in shape are outside the bounds of board.
-static bool __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i offset)
+static bool
+__js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i offset)
 {
 	int i;
 	const jsBlock *blocks = shape->blocks;
-	
+
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {
-		jsVec2i blockPos = js_vec2i_add(blocks[i].position, shape->offset);
-		jsVec2i pos = js_vec2i_add(blockPos, offset);
+		jsVec2i pos = js_vec2i_add(
+			js_vec2i_add(blocks[i].position, shape->offset), offset);
 
 		if(__js_outside_board(pos))
 			return true;
@@ -234,7 +251,7 @@ static int __js_clear_rows(jsBoard *board)
 		for(j = i; j < JS_BOARD_ROW_AMOUNT - 1; j++)
 			rows[j] = rows[j + 1];
 
-		rows[JS_BOARD_ROW_AMOUNT - 1] = __js_empty_row();		
+		rows[JS_BOARD_ROW_AMOUNT - 1] = __js_empty_row();
 		count++;
 	}
 
@@ -252,7 +269,7 @@ static int __js_merge(jsBoard *board, const jsShape *shape)
 	for(i = 0; i < JS_SHAPE_BLOCK_AMOUNT; i++) {
 		jsBlock block = blocks[i];
 		jsVec2i pos = js_vec2i_add(block.position, shape->offset);
-		
+
 		if(pos.y >= JS_BOARD_ROW_AMOUNT || pos.x >= JS_BOARD_COLUMN_AMOUNT) {
 			count++;
 			continue;
@@ -290,25 +307,25 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 	}
 
 	if(!freeze)
-		return 0;       
-		
+		return 0;
+
 	__js_merge(board, shape);
 
 	*shape = *next_shape;
-	*next_shape = __js_gen_shape();
+	*next_shape = __js_get_shape(__js_gen_shape_index());
 
 	status |= JS_STATE_SHAPE_CHANGE | JS_STATE_BOARD_CHANGE | JS_STATE_NEXT_SHAPE_CHANGE;
 
 	rows = __js_clear_rows(board);
-		
+
 	// if(__js_game_over(board, shape))
 	// 	status |= JS_STATE_GAME_OVER;
 
 	if(rows == 0)
 		return status;
-		
+
 	new_rows = state->rows + rows;
-		
+
 	old_level = state->level;
 	// new_level = __js_get_level(new_rows);
 
@@ -333,11 +350,12 @@ static bool __js_debug_nonnull_state(const jsTetrisState *state)
 	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->shape);
 	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->next_shape);
 
-	return state == NULL || state->board == NULL || state->shape == NULL || state->next_shape == NULL;
+	return state == NULL || state->board == NULL || state->shape == NULL ||
+				 state->next_shape == NULL;
 }
 
 #endif /* JS_DEBUG */
-	
+
 /// Moves the shape on the board of state. If the offsets y value is
 /// negative the move will generate score on success and 'freeze' the
 /// shape on overlap.
@@ -349,8 +367,8 @@ void js_move_shape(jsTetrisState *state, jsVec2i offset)
 		JS_DEBUG_PUTS(js_move_shape, "state may not include NULL");
 		return;
 	}
-#endif /* JS_DEBUG */       
-	
+#endif /* JS_DEBUG */
+
 	bool freeze = false;
 	double score = -1.0;
 
@@ -373,7 +391,58 @@ void js_force_shape(jsTetrisState *state, jsVec2i offset)
 		JS_DEBUG_PUTS(js_force_shape, "state may not include NULL");
 		return;
 	}
-#endif /* JS_DEBUG */       
-	
+#endif /* JS_DEBUG */
+
 	state->status |= __js_move(state, offset, true, -1);
+}
+
+/// Finds the form of the current index. Then checks if the incremented index is
+/// inside the bounds of the form, loops the index if so.
+///
+/// Returns next index given the rotation.
+static int __js_incr_shape_index(int index, jsRotation rot)
+{
+	__jsRange form;
+	int newIndex = index + (int) rot, i = -1;
+
+	do {
+		i++;
+		form = rot_ranges[i];
+	} while(index < form.min || index > form.max);
+
+	if(newIndex > form.max)
+		return form.min;
+
+	if(newIndex < form.min)
+		return form.max;
+
+	return newIndex;
+}
+
+/// Rotates the shape on the board of the state. Sets state status on success.
+void js_rotate_shape(jsTetrisState *state, jsRotation rot)
+{
+	#ifdef JS_DEBUG
+
+		if(__js_debug_nonnull_state(state)) {
+			JS_DEBUG_PUTS(js_rotate_shape, "state may not include NULL");
+			return;
+		}
+	#endif /* JS_DEBUG */
+
+	jsShape *shape = state->shape;
+	const jsBlock *oldBlocks = shape->blocks;
+	int result, newIndex = __js_incr_shape_index(shape->index, rot);
+
+	shape->blocks = __js_make_shape(newIndex).blocks;
+
+	result = __js_move(state, (jsVec2i) {0, 0}, false, -1);
+
+	if(!result) {
+		shape->blocks = oldBlocks;
+		return;
+	}
+
+	state->status |= result;
+	shape->index = newIndex;
 }

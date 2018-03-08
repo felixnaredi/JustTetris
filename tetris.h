@@ -1,4 +1,4 @@
-// 
+//
 // Filename: tetris_types.h
 // Created: 2018-02-09 16:41:11 +0100
 // Author: Felix Nared
@@ -84,7 +84,7 @@ typedef struct
 {
 	float x;
 	float y;
-	float z;	
+	float z;
 } jsVec3f;
 
 int js_vec2i_equal(jsVec2i a, jsVec2i b);
@@ -130,7 +130,8 @@ typedef union
 typedef struct
 {
 	jsVec2i offset;
-	jsBlock blocks[JS_SHAPE_BLOCK_AMOUNT];
+	int index;
+	const jsBlock *blocks;
 } jsShape;
 
 typedef enum {
@@ -177,8 +178,13 @@ void js_init_tetris_state(jsTetrisState *state);
 
 void js_move_shape(jsTetrisState *state, jsVec2i offset);
 void js_force_shape(jsTetrisState *state, jsVec2i offset);
-// void js_rotate_shape(jsTetrisState *state, int rot);
+
+typedef enum {
+	jsRotationClockwise        =  1,
+	jsRotationCounterClockwise = -1,
+} jsRotation;
+
+void js_rotate_shape(jsTetrisState *state, jsRotation rot);
 
 
 #endif /* TETRIS_TYPES_H */
-
