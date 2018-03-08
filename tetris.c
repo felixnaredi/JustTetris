@@ -24,30 +24,30 @@ typedef struct
 	const jsBlock blocks[JS_SHAPE_BLOCK_AMOUNT];
 } __jsShapeData;
 
-#define JS_SHAPE_VERTICIES(id, x0, y0, x1, y1, x2, y2, x3, y3) \
+#define JS_SHAPE_DATA(id, x0, y0, x1, y1, x2, y2, x3, y3) \
 	{ {id | JS_BLOCK_FILLED, x0, y0}, {id | JS_BLOCK_FILLED, x1, y1}, \
 	  {id | JS_BLOCK_FILLED, x2, y2}, {id | JS_BLOCK_FILLED, x3, y3} }
 
 static const __jsShapeData shape_data[] = {
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_O, 1, 2, 2, 2, 1, 3, 2, 3) },
-	{ {4, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_I, 1, 0, 1, 1, 1, 2, 1, 3) },
-	{ {3, 17}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_I, 0, 2, 1, 2, 2, 2, 3, 2) },
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_S, 2, 1, 1, 2, 2, 2, 1, 3) },
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_S, 1, 2, 2, 2, 2, 3, 3, 3) },
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_Z, 1, 1, 1, 2, 2, 2, 2, 3) },
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_Z, 2, 2, 3, 2, 1, 3, 2, 3) },
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_L, 1, 1, 2, 1, 1, 2, 1, 3) },
-	{ {4, 17}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_L, 0, 1, 0, 2, 1, 2, 2, 2) },
-	{ {4, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_L, 1, 1, 1, 2, 0, 3, 1, 3) },
-	{ {4, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_L, 0, 2, 1, 2, 2, 2, 2, 3) },
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_J, 1, 1, 2, 1, 2, 2, 2, 3) },
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_J, 1, 2, 2, 2, 3, 2, 1, 3) },
-	{ {2, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_J, 2, 1, 2, 2, 2, 3, 3, 3) },
-	{ {3, 17}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_J, 3, 1, 1, 2, 2, 2, 3, 2) },
-	{ {3, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_T, 1, 1, 1, 2, 2, 2, 1, 3) },
-	{ {4, 17}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_T, 1, 1, 0, 2, 1, 2, 2, 2) },
-	{ {4, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_T, 1, 1, 0, 2, 1, 2, 1, 3) },
-	{ {4, 16}, JS_SHAPE_VERTICIES(JS_SHAPE_FORMATION_T, 0, 2, 1, 2, 2, 2, 1, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_O, 1, 2, 2, 2, 1, 3, 2, 3) },
+	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_I, 1, 0, 1, 1, 1, 2, 1, 3) },
+	{ {3, 17}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_I, 0, 2, 1, 2, 2, 2, 3, 2) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_S, 2, 1, 1, 2, 2, 2, 1, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_S, 1, 2, 2, 2, 2, 3, 3, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_Z, 1, 1, 1, 2, 2, 2, 2, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_Z, 2, 2, 3, 2, 1, 3, 2, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_L, 1, 1, 2, 1, 1, 2, 1, 3) },
+	{ {4, 17}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_L, 0, 1, 0, 2, 1, 2, 2, 2) },
+	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_L, 1, 1, 1, 2, 0, 3, 1, 3) },
+	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_L, 0, 2, 1, 2, 2, 2, 2, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_J, 1, 1, 2, 1, 2, 2, 2, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_J, 1, 2, 2, 2, 3, 2, 1, 3) },
+	{ {2, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_J, 2, 1, 2, 2, 2, 3, 3, 3) },
+	{ {3, 17}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_J, 3, 1, 1, 2, 2, 2, 3, 2) },
+	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_T, 1, 1, 1, 2, 2, 2, 1, 3) },
+	{ {4, 17}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_T, 1, 1, 0, 2, 1, 2, 2, 2) },
+	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_T, 1, 1, 0, 2, 1, 2, 1, 3) },
+	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_T, 0, 2, 1, 2, 2, 2, 1, 3) },
 };
 
 typedef struct
@@ -312,7 +312,7 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 	__js_merge(board, shape);
 
 	*shape = *next_shape;
-	*next_shape = __js_get_shape(__js_gen_shape_index());
+	*next_shape = __js_make_shape(__js_gen_shape_index());
 
 	status |= JS_STATE_SHAPE_CHANGE | JS_STATE_BOARD_CHANGE | JS_STATE_NEXT_SHAPE_CHANGE;
 
