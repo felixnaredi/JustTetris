@@ -12,7 +12,10 @@
 #include "tetris.h"
 #include "build.h"
 
+#ifdef JS_USING_EMACS
+
 #include "emacs_ac_break.h"
+#endif /* JS_USING_EMACS */
 
 
 #define JS_BLOCK_FILLED    0x00000001
@@ -122,12 +125,12 @@ static int __js_gen_shape_index()
 	return rot_ranges[rand() % JS_SHAPE_FORMATION_AMOUNT].min;
 }
 
-/// Allocates the size of type to var. If allocation fails it jumps to
-/// the label err. Therefor must functions using JS_ALLOC provide an
-/// err label.
-#define JS_ALLOC(var, type, err) \
+/// Allocates the size of type to var.
+/// If allocation fails it jumps to 'label'. Therefor must functions using
+/// 'JS_ALLOC' provide an error label.
+#define JS_ALLOC(var, type, label) \
 	var = malloc(sizeof(type)); \
-	if(var == NULL) goto err
+	if(var == NULL) goto label
 
 /// Frees var as long as it isn't NULL.
 #define JS_DEALLOC(var) if(var != NULL) free(var)
@@ -164,6 +167,8 @@ void js_dealloc_tetris_state(jsTetrisState *state)
 /// Initailizes a jsTetrisState as it is at a new game.
 void js_init_tetris_state(jsTetrisState *state)
 {
+  JS_DEBUG_NULLPTR(js_init_tetris_state, state);
+  
 	state->status = 0;
 	*state->board = __js_empty_board();
 	*state->shape = __js_make_shape(__js_gen_shape_index());
@@ -270,7 +275,8 @@ static int __js_merge(jsBoard *board, const jsShape *shape)
 		jsBlock block = blocks[i];
 		jsVec2i pos = js_vec2i_add(block.position, shape->offset);
 
-		if(pos.y >= JS_BOARD_ROW_AMOUNT || pos.x >= JS_BOARD_COLUMN_AMOUNT) {
+		if(pos.y < 0 || pos.x < 0 ||
+			 pos.y >= JS_BOARD_ROW_AMOUNT || pos.x >= JS_BOARD_COLUMN_AMOUNT) {
 			count++;
 			continue;
 		}
@@ -288,22 +294,23 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 {
 	jsBoard *board = state->board;
 	jsShape *shape = state->shape, *next_shape = state->next_shape;
-	int rows, new_rows, old_level, new_level, status = 0;
-	bool overlapp = __js_overlapp(board, shape, offset);
+	int rows, new_rows, old_level, new_level = 0, status = 0;
 
-	if(!overlapp) {
-		__js_reset_countdown(state);
+	if(!__js_overlapp(board, shape, offset)) {
+		if(freeze) {
+			__js_reset_countdown(state);
+			status |= JS_STATE_RESET_COUNTDOWN;
+		}
+
 		shape->offset = js_vec2i_add(shape->offset, offset);
 
-		status |= JS_STATE_SHAPE_CHANGE | JS_STATE_RESET_COUNTDOWN;
+		status |= JS_STATE_SHAPE_CHANGE;
 
 		if(score < 0)
 			return status;
 
 		// state->score += score * __js_level_multiplier(level);
-		status |= JS_STATE_SCORE_CHANGE;
-
-		return status;
+		return status | JS_STATE_SCORE_CHANGE;
 	}
 
 	if(!freeze)
@@ -339,22 +346,26 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 	return status;
 }
 
+
 #ifdef JS_DEBUG
 
 /// Returns true if one or more non nullable pointers of state is
 /// NULL.
 static bool __js_debug_nonnull_state(const jsTetrisState *state)
 {
-	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state);
-	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->board);
-	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->shape);
-	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->next_shape);
+	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state, err);
+	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->board, err);
+	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->shape, err);
+	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->next_shape, err);
 
-	return state == NULL || state->board == NULL || state->shape == NULL ||
-				 state->next_shape == NULL;
+	return false;
+
+err:
+	return true;
 }
 
 #endif /* JS_DEBUG */
+
 
 /// Moves the shape on the board of state. If the offsets y value is
 /// negative the move will generate score on success and 'freeze' the
@@ -408,6 +419,7 @@ static int __js_incr_shape_index(int index, jsRotation rot)
 	do {
 		i++;
 		form = rot_ranges[i];
+
 	} while(index < form.min || index > form.max);
 
 	if(newIndex > form.max)

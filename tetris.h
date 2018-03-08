@@ -9,7 +9,10 @@
 
 #include <stdbool.h>
 
+#ifdef JS_USING_EMACS
+
 #include "emacs_ac_break.h"
+#endif /* JS_USING_EMACS */
 
 //
 // Frame Cycle:
@@ -158,7 +161,7 @@ typedef struct
 	int timer;
 } jsTetrisState;
 
-jsTetrisState *js_alloc_tetris_state();
+jsTetrisState *js_alloc_tetris_state(void);
 void js_dealloc_tetris_state(jsTetrisState *state);
 void js_init_tetris_state(jsTetrisState *state);
 

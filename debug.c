@@ -10,7 +10,10 @@
 
 #include "build.h"
 
+#ifdef JS_USING_EMACS
+
 #include "emacs_ac_break.h"
+#endif /* JS_USING_EMACS */
 
 static FILE *__js_debug_file = NULL;
 
@@ -21,6 +24,10 @@ static size_t __js_now(char *des, size_t len)
  	return strftime(des, len, "[%F %X]", localtime(&now));
 }
 
+/// Opens the file at path with 'append' option and sets it to the
+/// current debug file.
+///
+/// Returns 0 value on failure.
 int js_debug_init_log(char *path) 
 {
 	char now[32];
@@ -46,6 +53,9 @@ int js_debug_init_log(char *path)
 	return 1;
 }
 
+/// Closes the current debug file.
+///
+/// Returns 0 if no file were closed.
 int js_debug_close_log()
 {
 	char now[32];

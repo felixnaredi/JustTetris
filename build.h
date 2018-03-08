@@ -1,4 +1,4 @@
-// 
+//
 // Filename: build.h
 // Created: 2018-02-10 00:35:36 +0100
 // Author: Felix Nared
@@ -24,9 +24,11 @@ int __js_debug_print(const char *func, const char *file, int line, const char *f
 #define JS_DEBUG_PUTS(func, msg) \
 	__js_debug_print(#func, __FILE__, __LINE__, msg)
 
-#define JS_DEBUG_NULLPTR(func, ptr)		\
-	if(ptr == NULL) \
-		__js_debug_print(#func, __FILE__, __LINE__, "null pointer exception: " #ptr)
+#define JS_DEBUG_NULLPTR(func, ptr, label)		\
+	if(ptr == NULL) { \
+		__js_debug_print(#func, __FILE__, __LINE__, "null pointer exception: " #ptr) \
+		goto label; \
+	}
 
 #define JS_DEBUG_VALUE(func, var, type)		\
 	__js_debug_print(#func, __FILE__, __LINE__, #var ": " type, var)
@@ -49,5 +51,3 @@ int __js_debug_print(const char *func, const char *file, int line, const char *f
 
 
 #endif /* BUILD_H */
-
-
