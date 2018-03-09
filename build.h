@@ -10,9 +10,6 @@
 #include <stdio.h>
 
 // #define JS_DEBUG
-// #define JS_BUILD_SAFE_GLOBAL
-// #define JS_BUILD_RENDER_NCURSES
-// #define JS_BUILD_RENDER_OPENGL
 
 #ifdef JS_DEBUG
 
@@ -26,7 +23,7 @@ int __js_debug_print(const char *func, const char *file, int line, const char *f
 
 #define JS_DEBUG_NULLPTR(func, ptr, label)		\
 	if(ptr == NULL) { \
-		__js_debug_print(#func, __FILE__, __LINE__, "null pointer exception: " #ptr) \
+		__js_debug_print(#func, __FILE__, __LINE__, "null pointer exception: " #ptr); \
 		goto label; \
 	}
 
@@ -40,14 +37,6 @@ int __js_debug_print(const char *func, const char *file, int line, const char *f
 #define JS_DEBUG_VALUE(func, var, type)
 
 #endif /* JS_DEBUG */
-
-#ifdef JS_BUILD_SAFE_GLOBAL
-
-
-
-
-
-#endif // JS_BUILD_SAFE_GLOBAL
 
 
 #endif /* BUILD_H */

@@ -32,25 +32,25 @@ typedef struct
 	  {id | JS_BLOCK_FILLED, x2, y2}, {id | JS_BLOCK_FILLED, x3, y3} }
 
 static const __jsShapeData shape_data[] = {
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_O, 1, 2, 2, 2, 1, 3, 2, 3) },
-	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_I, 1, 0, 1, 1, 1, 2, 1, 3) },
-	{ {3, 17}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_I, 0, 2, 1, 2, 2, 2, 3, 2) },
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_S, 2, 1, 1, 2, 2, 2, 1, 3) },
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_S, 1, 2, 2, 2, 2, 3, 3, 3) },
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_Z, 1, 1, 1, 2, 2, 2, 2, 3) },
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_Z, 2, 2, 3, 2, 1, 3, 2, 3) },
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_L, 1, 1, 2, 1, 1, 2, 1, 3) },
-	{ {4, 17}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_L, 0, 1, 0, 2, 1, 2, 2, 2) },
-	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_L, 1, 1, 1, 2, 0, 3, 1, 3) },
-	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_L, 0, 2, 1, 2, 2, 2, 2, 3) },
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_J, 1, 1, 2, 1, 2, 2, 2, 3) },
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_J, 1, 2, 2, 2, 3, 2, 1, 3) },
-	{ {2, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_J, 2, 1, 2, 2, 2, 3, 3, 3) },
-	{ {3, 17}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_J, 3, 1, 1, 2, 2, 2, 3, 2) },
-	{ {3, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_T, 1, 1, 1, 2, 2, 2, 1, 3) },
-	{ {4, 17}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_T, 1, 1, 0, 2, 1, 2, 2, 2) },
-	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_T, 1, 1, 0, 2, 1, 2, 1, 3) },
-	{ {4, 16}, JS_SHAPE_DATA(JS_SHAPE_FORMATION_T, 0, 2, 1, 2, 2, 2, 1, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationO, 1, 2, 2, 2, 1, 3, 2, 3) },
+	{ {4, 16}, JS_SHAPE_DATA(jsShapeFormationI, 1, 0, 1, 1, 1, 2, 1, 3) },
+	{ {3, 17}, JS_SHAPE_DATA(jsShapeFormationI, 0, 2, 1, 2, 2, 2, 3, 2) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationS, 2, 1, 1, 2, 2, 2, 1, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationS, 1, 2, 2, 2, 2, 3, 3, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationZ, 1, 1, 1, 2, 2, 2, 2, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationZ, 2, 2, 3, 2, 1, 3, 2, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationL, 1, 1, 2, 1, 1, 2, 1, 3) },
+	{ {4, 17}, JS_SHAPE_DATA(jsShapeFormationL, 0, 1, 0, 2, 1, 2, 2, 2) },
+	{ {4, 16}, JS_SHAPE_DATA(jsShapeFormationL, 1, 1, 1, 2, 0, 3, 1, 3) },
+	{ {4, 16}, JS_SHAPE_DATA(jsShapeFormationL, 0, 2, 1, 2, 2, 2, 2, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationJ, 1, 1, 2, 1, 2, 2, 2, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationJ, 1, 2, 2, 2, 3, 2, 1, 3) },
+	{ {2, 16}, JS_SHAPE_DATA(jsShapeFormationJ, 2, 1, 2, 2, 2, 3, 3, 3) },
+	{ {3, 17}, JS_SHAPE_DATA(jsShapeFormationJ, 3, 1, 1, 2, 2, 2, 3, 2) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationT, 1, 1, 1, 2, 2, 2, 1, 3) },
+	{ {4, 17}, JS_SHAPE_DATA(jsShapeFormationT, 1, 1, 0, 2, 1, 2, 2, 2) },
+	{ {4, 16}, JS_SHAPE_DATA(jsShapeFormationT, 1, 1, 0, 2, 1, 2, 1, 3) },
+	{ {4, 16}, JS_SHAPE_DATA(jsShapeFormationT, 0, 2, 1, 2, 2, 2, 1, 3) },
 };
 
 typedef struct
@@ -80,6 +80,11 @@ static void __js_reset_countdown(jsTetrisState *state)
 static jsBlock __js_empty_block()
 {
 	return (jsBlock) {0, -1, -1};
+}
+
+jsBlock js_empty_block()
+{
+  return __js_empty_block();
 }
 
 /// Returns an empty row.
@@ -148,6 +153,7 @@ jsTetrisState *js_alloc_tetris_state()
 	JS_ALLOC(state->next_shape, jsShape, err);
 
 	return state;
+
 err:
 	JS_DEBUG_PUTS(js_alloc_tetris_state, "failed alloc");
 	js_dealloc_tetris_state(state);
@@ -158,17 +164,22 @@ err:
 /// Deallocates a jsTetrisState.
 void js_dealloc_tetris_state(jsTetrisState *state)
 {
+	JS_DEBUG_NULLPTR(js_dealloc_tetris_state, state, err);
+
 	JS_DEALLOC(state->next_shape);
 	JS_DEALLOC(state->shape);
 	JS_DEALLOC(state->board);
 	JS_DEALLOC(state);
+
+err:
+	return;
 }
 
 /// Initailizes a jsTetrisState as it is at a new game.
 void js_init_tetris_state(jsTetrisState *state)
 {
-  JS_DEBUG_NULLPTR(js_init_tetris_state, state);
-  
+  JS_DEBUG_NULLPTR(js_init_tetris_state, state, err);
+
 	state->status = 0;
 	*state->board = __js_empty_board();
 	*state->shape = __js_make_shape(__js_gen_shape_index());
@@ -178,6 +189,9 @@ void js_init_tetris_state(jsTetrisState *state)
 	state->score = 0;
 	state->timer = __js_timer(1);
 	__js_reset_countdown(state);
+
+err:
+	return;
 }
 
 /// Returns true if the block is empty.

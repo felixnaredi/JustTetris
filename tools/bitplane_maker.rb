@@ -2,19 +2,19 @@
 
 # bitplane_maker.rb
 #
-# Project : jsTetris 
+# Project : jsTetris
 # Author  : Felix Naredi
 # Date    : 2017-12-02
 #
 
 class String
-  
+
   def to_a()
     ret = []
     self.each_char { |c| ret += [c] }
     ret
   end
-  
+
 end
 
 def hexf(n)
@@ -188,11 +188,14 @@ end
 
 def shape_verticies
 
+  type = '__jsShapeData'
+  vname = 'shape_data'
+
   def rect(points)
     xs = points.reduce([]) { |s, p| s.push p[:x] }
     x_min = xs.min
     x_max = xs.max
-    
+
     ys = points.reduce([]) { |s, p| s.push p[:y] }
     y_min = ys.min
     y_max = ys.max
@@ -204,24 +207,24 @@ def shape_verticies
       :y => y_min
     }
   end
-  
+
   forms = [
-    	'JS_SHAPE_FORMATION_O',
-	'JS_SHAPE_FORMATION_I',
-	'JS_SHAPE_FORMATION_S',
-	'JS_SHAPE_FORMATION_Z',
-	'JS_SHAPE_FORMATION_L',
-	'JS_SHAPE_FORMATION_J',
-	'JS_SHAPE_FORMATION_T',
+    'jsShapeFormationO',
+    'jsShapeFormationI',
+	  'jsShapeFormationS',
+	  'jsShapeFormationZ',
+	  'jsShapeFormationL',
+	  'jsShapeFormationJ',
+	  'jsShapeFormationT',
   ]
-  puts 'static const jsShape shape_verticies[] = {'
+  puts "static const #{type} #{vname}[] = {"
   SHAPES.each { |form|
     fn = forms.shift
     form.each { |shape|
       ps = points_from_rows shape
       r = rect ps
       print "\t{ {#{5 - r[:x] - r[:w] / 2}, #{20 - r[:y] - r[:h]}}, "
-      print "JS_SHAPE_VERTICIES(#{fn}, "
+      print "JS_SHAPE_DATA(#{fn}, "
       print ps.map { |p| "#{p[:x]}, #{p[:y]}"}.join ', '
       puts ") },"
     }
