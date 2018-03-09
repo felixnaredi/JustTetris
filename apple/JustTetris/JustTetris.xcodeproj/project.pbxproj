@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A3939D62051A75F007728E0 /* BlockItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A3939D52051A75F007728E0 /* BlockItemView.xib */; };
 		0AD4201D2051889800FBC153 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD4201C2051889800FBC153 /* AppDelegate.swift */; };
 		0AD4201F2051889800FBC153 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0AD4201E2051889800FBC153 /* Assets.xcassets */; };
 		0AD420222051889800FBC153 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0AD420202051889800FBC153 /* MainMenu.xib */; };
@@ -21,7 +20,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0A3939D52051A75F007728E0 /* BlockItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BlockItemView.xib; sourceTree = "<group>"; };
 		0A5E3B972053178D003234D4 /* shader_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shader_types.h; sourceTree = "<group>"; };
 		0AD420192051889800FBC153 /* JustTetris.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JustTetris.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AD4201C2051889800FBC153 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -84,7 +82,6 @@
 				0AD4201E2051889800FBC153 /* Assets.xcassets */,
 				0AD420202051889800FBC153 /* MainMenu.xib */,
 				0AD4203520518CB900FBC153 /* Window.xib */,
-				0A3939D52051A75F007728E0 /* BlockItemView.xib */,
 				0AD420232051889800FBC153 /* Info.plist */,
 				0AD420242051889800FBC153 /* JustTetris.entitlements */,
 				0AD4202A2051898200FBC153 /* JustTetris-Bridging-Header.h */,
@@ -155,7 +152,6 @@
 				0AD4201F2051889800FBC153 /* Assets.xcassets in Resources */,
 				0AD420222051889800FBC153 /* MainMenu.xib in Resources */,
 				0AD4203620518CB900FBC153 /* Window.xib in Resources */,
-				0A3939D62051A75F007728E0 /* BlockItemView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
