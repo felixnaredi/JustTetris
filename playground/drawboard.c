@@ -15,7 +15,7 @@
 #include "../emacs_ac_break.h"
 
 
-static void draw_board(const jsBoard *board, WINDOW *window)
+static void __draw_board(const jsBoard *board, WINDOW *window)
 {
 	int y, x;
 	const jsBlock *blocks = board->blocks;
@@ -36,7 +36,7 @@ static void draw_board(const jsBoard *board, WINDOW *window)
 	}
 }
 
-static void draw_shape(const jsShape *shape, WINDOW *window)
+static void __draw_shape(const jsShape *shape, WINDOW *window)
 {
 	int i;
 	jsVec2i offset = shape->offset;
@@ -56,7 +56,7 @@ static void draw_shape(const jsShape *shape, WINDOW *window)
 	}
 }
 
-static void draw_state(const jsTetrisState *state, jsVec2i orig)
+static void __draw_state(const jsTetrisState *state, jsVec2i orig)
 {
 	WINDOW *border, *board;
 
@@ -68,8 +68,8 @@ static void draw_state(const jsTetrisState *state, jsVec2i orig)
 
 	board = newwin(JS_BOARD_ROW_AMOUNT, JS_BOARD_COLUMN_AMOUNT, orig.y + 1, orig.x + 1);
 
-	draw_board(state->board, board);
-	draw_shape(state->shape, board);
+	__draw_board(state->board, board);
+	__draw_shape(state->shape, board);
 
 	wrefresh(board);
 	delwin(board);
@@ -81,12 +81,14 @@ int main(int argc, char *argv[])
 	int input;
 
 #ifdef JS_DEBUG
+
 	js_debug_init_log("log_drawboard");
 #endif // JS_DEBUG
 
 	srand(time(NULL));
 
 	state = js_alloc_tetris_state();
+
 	if(state == NULL) {
 		fprintf(stderr, "failed to init state");
 		return -1;
@@ -105,7 +107,7 @@ int main(int argc, char *argv[])
 	refresh();
 
 	do {
-		draw_state(state, (jsVec2i) {2, 2});
+		__draw_state(state, (jsVec2i) {2, 2});
 
 		input = getch();
 
@@ -137,6 +139,7 @@ int main(int argc, char *argv[])
 	js_dealloc_tetris_state(state);
 
 #ifdef JS_DEBUG
+
 	js_debug_close_log();
 #endif // JS_DEBUG
 
