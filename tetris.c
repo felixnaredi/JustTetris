@@ -422,7 +422,7 @@ void js_force_shape(jsTetrisState *state, jsVec2i offset)
 }
 
 /// Finds the form of the current index. Then checks if the incremented index is
-/// inside the bounds of the form, loops the index if so.
+/// inside the bounds of the form, if not loops the index.
 ///
 /// Returns next index given the rotation.
 static int __js_incr_shape_index(int index, jsRotation rot)
