@@ -178,7 +178,7 @@ err:
 /// Initailizes a jsTetrisState as it is at a new game.
 void js_init_tetris_state(jsTetrisState *state)
 {
-  JS_DEBUG_NULLPTR(js_init_tetris_state, state, err);
+	JS_DEBUG_NULLPTR(js_init_tetris_state, state, err);
 
 	state->status = 0;
 	*state->board = __js_empty_board();
