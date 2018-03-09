@@ -434,7 +434,7 @@ static int __js_incr_shape_index(int index, jsRotation rot)
 		i++;
 		form = rot_ranges[i];
 
-	} while(index < form.min || index > form.max);
+	} while(index > form.max);
 
 	if(newIndex > form.max)
 		return form.min;
