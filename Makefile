@@ -7,4 +7,4 @@ main-debug: main.c interface.c tetris.c math.c debug.c
 	$(CC) -o $@.o $^ -DJS_DEBUG -lncurses
 
 clean:
-	rm *~ *.o
+	rm -f *~ *.o

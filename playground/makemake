@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
-# 
+#
 # Filename: makemake
 # Created: 2018-02-18 04:34:29 +0100
 # Author: Felix Nared
-# 
+#
 
 f = open 'Makefile','w'
 
@@ -14,13 +14,13 @@ Dir.new(Dir.pwd).each { |e|
 
   r = (/(.+)\.c/.match e)[1]
   ls = (open e).read.lines
-  
+
   while !ls.empty?
     next unless /\/\/\sBUILD:/.match ls.shift
-    
+
     f.puts "#{r}:\n\t#{/\/\/\s+(.*)/.match(ls.shift)[1]}"
     break
   end
 }
 
-f.puts "clean:\n\trm *~ *.o *_log log_*"
+f.puts "clean:\n\trm -f *~ *.o *_log log_*"
