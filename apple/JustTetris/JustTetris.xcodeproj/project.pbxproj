@@ -17,10 +17,12 @@
 		0AD4203620518CB900FBC153 /* Window.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0AD4203520518CB900FBC153 /* Window.xib */; };
 		0AD420382051905100FBC153 /* Tetris.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD420372051905100FBC153 /* Tetris.swift */; };
 		0AD4203C20519C4C00FBC153 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD4203B20519C4C00FBC153 /* ViewController.swift */; };
+		0AE19D8F2053117E00BB754D /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19D8E2053117E00BB754D /* Shaders.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0A3939D52051A75F007728E0 /* BlockItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BlockItemView.xib; sourceTree = "<group>"; };
+		0A5E3B972053178D003234D4 /* shader_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shader_types.h; sourceTree = "<group>"; };
 		0AD420192051889800FBC153 /* JustTetris.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JustTetris.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AD4201C2051889800FBC153 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0AD4201E2051889800FBC153 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -36,6 +38,7 @@
 		0AD4203520518CB900FBC153 /* Window.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Window.xib; sourceTree = "<group>"; };
 		0AD420372051905100FBC153 /* Tetris.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tetris.swift; sourceTree = "<group>"; };
 		0AD4203B20519C4C00FBC153 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		0AE19D8E2053117E00BB754D /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +74,8 @@
 				0AD4201C2051889800FBC153 /* AppDelegate.swift */,
 				0AD420372051905100FBC153 /* Tetris.swift */,
 				0AD4203B20519C4C00FBC153 /* ViewController.swift */,
+				0A5E3B972053178D003234D4 /* shader_types.h */,
+				0AE19D8E2053117E00BB754D /* Shaders.metal */,
 				0AD4202E2051898200FBC153 /* build.h */,
 				0AD4202D2051898200FBC153 /* debug.c */,
 				0AD420302051898200FBC153 /* math.c */,
@@ -162,6 +167,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0AD420342051898300FBC153 /* math.c in Sources */,
+				0AE19D8F2053117E00BB754D /* Shaders.metal in Sources */,
 				0AD420322051898300FBC153 /* debug.c in Sources */,
 				0AD420382051905100FBC153 /* Tetris.swift in Sources */,
 				0AD420312051898300FBC153 /* tetris.c in Sources */,

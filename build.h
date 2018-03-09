@@ -33,7 +33,7 @@ int __js_debug_print(const char *func, const char *file, int line, const char *f
 #else
 
 #define JS_DEBUG_PUTS(func, msg)
-#define JS_DEBUG_NULLPTR(func, ptr)
+#define JS_DEBUG_NULLPTR(func, ptr, label)
 #define JS_DEBUG_VALUE(func, var, type)
 
 #endif /* JS_DEBUG */

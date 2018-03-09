@@ -12,43 +12,17 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="196" y="240" width="488" height="600"/>
+            <rect key="contentRect" x="196" y="240" width="489" height="529"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
-                <rect key="frame" x="0.0" y="0.0" width="488" height="600"/>
+                <rect key="frame" x="0.0" y="0.0" width="489" height="529"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <scrollView wantsLayer="YES" fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="prT-8b-GC9">
-                        <rect key="frame" x="20" y="61" width="448" height="519"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <clipView key="contentView" ambiguous="YES" drawsBackground="NO" id="owv-mj-m4K">
-                            <rect key="frame" x="1" y="1" width="446" height="517"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                            <subviews>
-                                <collectionView ambiguous="YES" id="cnF-S0-gDh" customClass="ShapeCollectionView" customModule="JustTetris" customModuleProvider="target">
-                                    <rect key="frame" x="0.0" y="0.0" width="446" height="158"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
-                                    <collectionViewGridLayout key="collectionViewLayout" id="pM4-eK-lcd"/>
-                                    <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    <connections>
-                                        <outlet property="dataSource" destination="8z0-cz-Cb3" id="XxS-yl-QAk"/>
-                                    </connections>
-                                </collectionView>
-                            </subviews>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </clipView>
-                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="j1x-Rl-lsQ">
-                            <rect key="frame" x="1" y="543" width="446" height="16"/>
-                            <autoresizingMask key="autoresizingMask"/>
-                        </scroller>
-                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="UCs-Ab-XRw">
-                            <rect key="frame" x="234" y="1" width="15" height="143"/>
-                            <autoresizingMask key="autoresizingMask"/>
-                        </scroller>
-                    </scrollView>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6Qe-8b-zIh">
-                        <rect key="frame" x="190" y="13" width="110" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="BLV-3B-IIr" customClass="ShapeView" customModule="JustTetris" customModuleProvider="target">
+                        <rect key="frame" x="21" y="61" width="448" height="448"/>
+                    </customView>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="6Qe-8b-zIh">
+                        <rect key="frame" x="189" y="13" width="110" height="32"/>
                         <buttonCell key="cell" type="push" title="Break Point" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="FZj-eE-gy9">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -58,12 +32,20 @@
                         </connections>
                     </button>
                 </subviews>
+                <constraints>
+                    <constraint firstItem="6Qe-8b-zIh" firstAttribute="centerX" secondItem="EiT-Mj-1SZ" secondAttribute="centerX" id="C7e-m9-E2U"/>
+                    <constraint firstItem="6Qe-8b-zIh" firstAttribute="top" secondItem="BLV-3B-IIr" secondAttribute="bottom" constant="20" id="VtU-5A-hAj"/>
+                    <constraint firstAttribute="trailing" secondItem="BLV-3B-IIr" secondAttribute="trailing" constant="20" id="Xos-bO-x7Q"/>
+                    <constraint firstItem="BLV-3B-IIr" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" id="asX-hL-RGD"/>
+                    <constraint firstAttribute="bottom" secondItem="6Qe-8b-zIh" secondAttribute="bottom" constant="20" id="u5u-oc-gtc"/>
+                    <constraint firstItem="BLV-3B-IIr" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="21" id="ytZ-71-Ijs"/>
+                </constraints>
             </view>
-            <point key="canvasLocation" x="143" y="354"/>
+            <point key="canvasLocation" x="143.5" y="318.5"/>
         </window>
         <viewController id="8z0-cz-Cb3" customClass="ViewController" customModule="JustTetris" customModuleProvider="target">
             <connections>
-                <outlet property="nextShapeView" destination="cnF-S0-gDh" id="JGo-lO-u76"/>
+                <outlet property="shapeView" destination="BLV-3B-IIr" id="avh-zp-Dq1"/>
                 <outlet property="view" destination="EiT-Mj-1SZ" id="eto-Ij-DQj"/>
             </connections>
         </viewController>
