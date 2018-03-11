@@ -107,6 +107,8 @@ int main(int argc, char *argv[])
 	refresh();
 
 	do {
+		int gameOver;
+
 		__draw_state(state, (jsVec2i) {2, 2});
 
 		input = getch();
@@ -133,6 +135,19 @@ int main(int argc, char *argv[])
 		default:
 			break;
 		}
+
+		gameOver = state->status & JS_STATE_GAME_OVER;
+
+		if(state->status & JS_STATE_SCORE_CHANGE)
+			JS_DEBUG_VALUE(main, state->score, "%f");
+
+		if(gameOver) {
+			JS_DEBUG_PUTS(main, "game over!");
+			js_init_tetris_state(state);
+		}
+
+		js_clear_state_status(state);
+
 	} while(input != 'q');
 
 	endwin();

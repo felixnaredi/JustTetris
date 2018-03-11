@@ -4,8 +4,8 @@
 // Author: Felix Nared
 //
 
-#ifndef TETRIS_TYPES_H
-#define TETRIS_TYPES_H
+#ifndef TETRIS_H
+#define TETRIS_H
 
 #include <stdbool.h>
 
@@ -166,6 +166,8 @@ jsTetrisState *js_alloc_tetris_state(void);
 void js_dealloc_tetris_state(jsTetrisState *state);
 void js_init_tetris_state(jsTetrisState *state);
 
+void js_clear_state_status(jsTetrisState *state);
+
 #define JS_STATE_SHAPE_CHANGE      0x00000001
 #define JS_STATE_BOARD_CHANGE      0x00000002
 #define JS_STATE_NEXT_SHAPE_CHANGE 0x00000004
@@ -191,4 +193,4 @@ typedef enum {
 void js_rotate_shape(jsTetrisState *state, jsRotation rot);
 
 
-#endif /* TETRIS_TYPES_H */
+#endif /* TETRIS_H */

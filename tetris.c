@@ -194,6 +194,11 @@ err:
 	return;
 }
 
+void js_clear_state_status(jsTetrisState *state)
+{
+	state->status = 0;
+}
+
 /// Returns true if the block is empty.
 static bool __js_block_is_empty(jsBlock block)
 {
@@ -222,8 +227,8 @@ static bool __js_row_is_full(const jsRow *row)
 
 static bool __js_outside_board(jsVec2i pos)
 {
-	return pos.x < 0 || pos.y < 0 ||
-		pos.x >= JS_BOARD_COLUMN_AMOUNT || pos.y >= JS_BOARD_ROW_AMOUNT;
+	return pos.x < 0 || pos.y < 0 || pos.x >= JS_BOARD_COLUMN_AMOUNT ||
+		pos.y >= JS_BOARD_ROW_AMOUNT;
 }
 
 /// Returns true if at least one of the blocks in shape are at the
@@ -289,8 +294,7 @@ static int __js_merge(jsBoard *board, const jsShape *shape)
 		jsBlock block = blocks[i];
 		jsVec2i pos = js_vec2i_add(block.position, shape->offset);
 
-		if(pos.y < 0 || pos.x < 0 ||
-			 pos.y >= JS_BOARD_ROW_AMOUNT || pos.x >= JS_BOARD_COLUMN_AMOUNT) {
+		if(__js_outside_board(pos)) {
 			count++;
 			continue;
 		}
@@ -300,6 +304,31 @@ static int __js_merge(jsBoard *board, const jsShape *shape)
 
 	return count;
 }
+
+/// Returns the level for the given amount of rows.
+static int __js_get_level(int rows) {
+	return rows / 8 + 1;
+}
+
+/// Returns a score multiplier for the given level.
+static float __js_level_multiplier(int level) {
+	return (float) level / 8.0 + 1.0;
+}
+
+/// Returns the score clearing the given amount of rows is worth for the current
+/// level.
+static float __js_score_rows(int rows, int level) {
+	float multiplier = __js_level_multiplier(level);
+
+	switch (rows) {
+	case 1: return 1.0 * multiplier;
+	case 2: return 3.0 * multiplier;
+	case 3: return 7.0 * multiplier;
+	case 4: return 15.0 * multiplier;
+	default: return 0;
+	}
+}
+
 
 /// Set score to less than 0 if a successfull move shouldn't give any score.
 ///
@@ -323,7 +352,7 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 		if(score < 0)
 			return status;
 
-		// state->score += score * __js_level_multiplier(level);
+		state->score += score * __js_level_multiplier(state->level);
 		return status | JS_STATE_SCORE_CHANGE;
 	}
 
@@ -339,20 +368,23 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 
 	rows = __js_clear_rows(board);
 
-	// if(__js_game_over(board, shape))
-	// 	status |= JS_STATE_GAME_OVER;
+	if(rows == 0) {
+		// Game over accures when a shape overlapps with its initial
+		/// offset.
+		if(__js_overlapp(board, shape, (jsVec2i) {0, 0}))
+			return status | JS_STATE_GAME_OVER;
 
-	if(rows == 0)
 		return status;
+	}
 
 	new_rows = state->rows + rows;
 
 	old_level = state->level;
-	// new_level = __js_get_level(new_rows);
+	new_level = __js_get_level(new_rows);
 
 	state->rows = new_rows;
 	state->level = new_level;
-	// state->score += __js_score_rows(rows, new_level);
+	state->score += __js_score_rows(rows, new_level);
 
 	status |= JS_STATE_ROWS_CHANGE | JS_STATE_SCORE_CHANGE;
 	status |= new_level == old_level ? 0 : JS_STATE_LEVEL_CHANGE;
