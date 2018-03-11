@@ -75,6 +75,14 @@ static void __draw_state(const jsTetrisState *state, jsVec2i orig)
 	delwin(board);
 }
 
+static void __fall(jsTetrisState *state)
+{
+	do {
+		js_move_shape(state, (jsVec2i) {0, -1});
+		
+	} while(!(state->status & JS_STATE_BOARD_CHANGE));
+}
+
 int main(int argc, char *argv[])
 {
 	jsTetrisState *state;
@@ -107,8 +115,6 @@ int main(int argc, char *argv[])
 	refresh();
 
 	do {
-		int gameOver;
-
 		__draw_state(state, (jsVec2i) {2, 2});
 
 		input = getch();
@@ -132,16 +138,17 @@ int main(int argc, char *argv[])
 		case 'e':
 			js_rotate_shape(state, jsRotationCounterClockwise);
 			break;
+		case ' ':
+			__fall(state);
+			break;
 		default:
 			break;
 		}
 
-		gameOver = state->status & JS_STATE_GAME_OVER;
-
 		if(state->status & JS_STATE_SCORE_CHANGE)
 			JS_DEBUG_VALUE(main, state->score, "%f");
 
-		if(gameOver) {
+		if(state->status & JS_STATE_GAME_OVER) {
 			JS_DEBUG_PUTS(main, "game over!");
 			js_init_tetris_state(state);
 		}
