@@ -13,7 +13,8 @@
 #include <simd/simd.h>
 
 
-#define JS_BUFFER_VERTICIES 0
+#define JS_GRAPHIC_RESOURCE_VERTICIES    0x00000000
+#define JS_GRAPHIC_RESOURCE_SHAPE_MATRIX 0x00000001
 
 
 typedef struct

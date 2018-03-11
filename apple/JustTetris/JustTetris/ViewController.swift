@@ -21,105 +21,6 @@ class RedView: NSView {
 }
 
 
-struct Vertex {
-  
-  private let vertex: js_shader_vertex
-  
-  var position: float2 { return vertex.position }
-  var color: float4 { return vertex.color }
-  
-  init(position: float2, color: float4) {
-    vertex = js_shader_vertex(position: position, color: color)
-  }
-  
-}
-
-
-struct BufferIndex {
-  
-  static var verticies: Int { return Int(JS_BUFFER_VERTICIES) }
-  
-}
-
-
-struct RenderContext {
-  
-  let device: MTLDevice
-  let pipelineState: MTLRenderPipelineState
-  let commandQueue: MTLCommandQueue
-  
-  init?(with view: MTKView) {
-    guard let device = MTLCreateSystemDefaultDevice() else {
-      print("Device does not support Metal")
-      return nil
-    }
-    
-    self.device = device
-    view.device = device
-    
-    guard let commandQueue = device.makeCommandQueue() else { return nil }
-    self.commandQueue = commandQueue
-    
-    guard let library = device.makeDefaultLibrary() else { return nil }
-    
-    let descriptor = MTLRenderPipelineDescriptor()
-    
-    descriptor.vertexFunction = library.makeFunction(name: "vertexShader")
-    descriptor.fragmentFunction = library.makeFunction(name: "fragmentShader")
-    descriptor.colorAttachments[0].pixelFormat = view.colorPixelFormat
-    
-    do { pipelineState = try device.makeRenderPipelineState(descriptor: descriptor) }
-    catch let error {
-      print(error)
-      return nil
-    }
-  }
-  
-}
-
-
-class Renderer: NSObject, MTKViewDelegate {
-  
-  let renderContext: RenderContext
-  
-  init(renderContext: RenderContext) {
-    self.renderContext = renderContext
-  }
-  
-  func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-    return
-  }
-  
-  private var verticies: [Vertex] {
-    return [
-      Vertex(position: float2( 0.8, -0.8), color: float4(1, 0, 0, 1)),
-      Vertex(position: float2(-0.8, -0.8), color: float4(0, 1, 0, 1)),
-      Vertex(position: float2( 0.0,  0.8), color: float4(0, 0, 1, 1)),
-    ]
-  }
-  
-  func draw(in view: MTKView) {
-    guard let commandBuffer = renderContext.commandQueue.makeCommandBuffer() else { return }
-    guard let renderPassDescriptor = view.currentRenderPassDescriptor else { return }
-    
-    guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else { return }
-    
-    renderEncoder.setRenderPipelineState(renderContext.pipelineState)
-    renderEncoder.setVertexBytes(verticies, length: MemoryLayout<Vertex>.size * 3, index: BufferIndex.verticies)
-    
-    renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
-    
-    renderEncoder.endEncoding()
-    
-    guard let drawable = view.currentDrawable else { return }
-    
-    commandBuffer.present(drawable)
-    commandBuffer.commit()
-  }
-  
-}
-
-
 class ShapeView: MTKView {
   
   var mouseDownHandler: ((NSEvent) -> Void)?
@@ -142,11 +43,16 @@ class ViewController: NSViewController {
   
   @IBOutlet var shapeView: ShapeView!
   
-  var shapeViewRenderer: Renderer? {
+  var shapeViewRenderer: ShapeRenderer? {
     didSet { shapeView.delegate = shapeViewRenderer }
   }
   
-  var shape: Shape?
+  var shape: Shape? {
+    didSet {
+      guard let blocks = shape?.blocks else { return }
+      shapeViewRenderer?.blocks = blocks
+    }
+  }
   
   @IBAction func breakPoint(_ sender: Any?) { }
   
@@ -176,7 +82,10 @@ class ViewController: NSViewController {
     print(shape)
     
     guard let renderContext = RenderContext(with: shapeView) else { return }
-    shapeViewRenderer = Renderer(renderContext: renderContext)
+    guard let gridDescriptor = ShapeGridDescriptor(with: renderContext.device) else { return }
+    
+    shapeViewRenderer = ShapeRenderer(renderContext: renderContext, gridDescriptor: gridDescriptor)
+    shapeViewRenderer?.blocks = shape.blocks
     
     shapeView.mouseDownHandler = { _ in self.changeShape() }
   }

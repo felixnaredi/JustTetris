@@ -16,15 +16,28 @@ extension Position {
   
   init(_ x: Int, _ y: Int) { self.init(Int32(x), Int32(y)) }
   
+  func corners() -> (bottomLeft: Position, bottomRight: Position, topLeft: Position, topRight: Position) {
+    return (Position(x, y), Position(x + 1, y), Position(x, y + 1), Position(x + 1, y + 1))
+  }
+  
 }
 
 struct Block {
   
-  let status: Int32
+  struct Status {
+    let empty: Bool
+    
+    init(for block: jsBlock) {
+      empty = js_block_is_empty(block)
+    }
+    
+  }
+  
+  let status: Status
   let position: Position
   
   init(_ block: jsBlock) {
-    status = block.status
+    status = Status(for: block)
     position = Position(block.position.x, block.position.y)
   }
   

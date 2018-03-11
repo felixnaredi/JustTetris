@@ -3,16 +3,22 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "GLOBAL">
+         contextName = "GridRenderer.draw(in:):GridRenderer.swift">
          <PersistentStrings>
             <PersistentString
-               value = "shapeView.delegate">
+               value = "view.currentRenderPassDescriptor">
+            </PersistentString>
+            <PersistentString
+               value = "view.frame">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
          contextName = "ViewController.breakPoint(_:):ViewController.swift">
          <PersistentStrings>
+            <PersistentString
+               value = "shapeView.currentRenderPassDescriptor">
+            </PersistentString>
             <PersistentString
                value = "sender as? NSButton">
             </PersistentString>

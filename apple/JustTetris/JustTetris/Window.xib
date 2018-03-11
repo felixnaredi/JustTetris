@@ -12,17 +12,14 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="196" y="240" width="489" height="529"/>
+            <rect key="contentRect" x="196" y="240" width="494" height="496"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
-                <rect key="frame" x="0.0" y="0.0" width="489" height="529"/>
+                <rect key="frame" x="0.0" y="0.0" width="494" height="496"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="BLV-3B-IIr" customClass="ShapeView" customModule="JustTetris" customModuleProvider="target">
-                        <rect key="frame" x="21" y="61" width="448" height="448"/>
-                    </customView>
                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="6Qe-8b-zIh">
-                        <rect key="frame" x="189" y="13" width="110" height="32"/>
+                        <rect key="frame" x="192" y="13" width="110" height="32"/>
                         <buttonCell key="cell" type="push" title="Break Point" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="FZj-eE-gy9">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -31,21 +28,24 @@
                             <action selector="breakPoint:" target="8z0-cz-Cb3" id="MQI-Xe-0Gu"/>
                         </connections>
                     </button>
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="Oas-eg-vlD" customClass="ShapeView" customModule="JustTetris" customModuleProvider="target">
+                        <rect key="frame" x="20" y="61" width="454" height="415"/>
+                    </customView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="6Qe-8b-zIh" firstAttribute="centerX" secondItem="EiT-Mj-1SZ" secondAttribute="centerX" id="C7e-m9-E2U"/>
-                    <constraint firstItem="6Qe-8b-zIh" firstAttribute="top" secondItem="BLV-3B-IIr" secondAttribute="bottom" constant="20" id="VtU-5A-hAj"/>
-                    <constraint firstAttribute="trailing" secondItem="BLV-3B-IIr" secondAttribute="trailing" constant="20" id="Xos-bO-x7Q"/>
-                    <constraint firstItem="BLV-3B-IIr" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" id="asX-hL-RGD"/>
-                    <constraint firstAttribute="bottom" secondItem="6Qe-8b-zIh" secondAttribute="bottom" constant="20" id="u5u-oc-gtc"/>
-                    <constraint firstItem="BLV-3B-IIr" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="21" id="ytZ-71-Ijs"/>
+                    <constraint firstItem="6Qe-8b-zIh" firstAttribute="centerX" secondItem="EiT-Mj-1SZ" secondAttribute="centerX" id="FiI-q4-Cd3"/>
+                    <constraint firstItem="6Qe-8b-zIh" firstAttribute="top" secondItem="Oas-eg-vlD" secondAttribute="bottom" constant="20" id="H5o-De-LCY"/>
+                    <constraint firstItem="Oas-eg-vlD" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" id="SJD-AK-i5Z"/>
+                    <constraint firstItem="Oas-eg-vlD" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" id="ebk-uj-Fkg"/>
+                    <constraint firstAttribute="trailing" secondItem="Oas-eg-vlD" secondAttribute="trailing" constant="20" id="o4W-Dp-aQ0"/>
+                    <constraint firstAttribute="bottom" secondItem="6Qe-8b-zIh" secondAttribute="bottom" constant="20" symbolic="YES" id="x28-2Y-kNh"/>
                 </constraints>
             </view>
-            <point key="canvasLocation" x="143.5" y="318.5"/>
+            <point key="canvasLocation" x="34" y="260"/>
         </window>
         <viewController id="8z0-cz-Cb3" customClass="ViewController" customModule="JustTetris" customModuleProvider="target">
             <connections>
-                <outlet property="shapeView" destination="BLV-3B-IIr" id="avh-zp-Dq1"/>
+                <outlet property="shapeView" destination="Oas-eg-vlD" id="bmH-PS-uqK"/>
                 <outlet property="view" destination="EiT-Mj-1SZ" id="eto-Ij-DQj"/>
             </connections>
         </viewController>
