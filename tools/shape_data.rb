@@ -37,11 +37,11 @@ def shape_verticies
   ]
 
   def rect(points)
-    xs = points.reduce([]) { |s, p| s.push p[:x] }
+    xs = points.map { |p| p[:x] }
     x_min = xs.min
     x_max = xs.max
 
-    ys = points.reduce([]) { |s, p| s.push p[:y] }
+    ys = points.map { |p| p[:y] }
     y_min = ys.min
     y_max = ys.max
 
