@@ -1,10 +1,8 @@
 #!/usr/bin/env ruby
-
-# shape_data.rb
 #
-# Project : jsTetris
-# Author  : Felix Naredi
-# Date    : 2018-03-12
+# Filename: shape_data.rb
+# Created: 2018-03-12 22:45:12 +0100
+# Author: Felix Nared
 #
 
 require 'json'
