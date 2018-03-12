@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# bitplane_maker.rb
+# shape_data.rb
 #
 # Project : jsTetris
 # Author  : Felix Naredi
