@@ -11,8 +11,8 @@ Working demo drawn in terminal. Has no timer.
 
 #### *Build*
 ```bash
->$ cd playground ; ./makemake ; make drawboard
+>$ playground/makemake ; make -C playground/ drawboard
 ```
-Run file at *playground/drawboard.o
+Run file at *playground/drawboard.o*
 
 
