@@ -7,16 +7,6 @@
 
 require 'json'
 
-class String
-
-  def to_a()
-    ret = []
-    self.each_char { |c| ret += [c] }
-    ret
-  end
-
-end
-
 def points_from_rows(rs)
   rs_rev = rs.reverse
 
