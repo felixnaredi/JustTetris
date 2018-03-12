@@ -33,7 +33,7 @@ typedef struct
 
 static const __jsShapeData shape_data[] = {
 	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationO, 1, 2, 2, 2, 1, 3, 2, 3) },
-	{ {4, 16}, JS_SHAPE_DATA(jsShapeFormationI, 1, 0, 1, 1, 1, 2, 1, 3) },
+	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationI, 2, 0, 2, 1, 2, 2, 2, 3) },
 	{ {3, 17}, JS_SHAPE_DATA(jsShapeFormationI, 0, 2, 1, 2, 2, 2, 3, 2) },
 	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationS, 2, 1, 1, 2, 2, 2, 1, 3) },
 	{ {3, 16}, JS_SHAPE_DATA(jsShapeFormationS, 1, 2, 2, 2, 2, 3, 3, 3) },
