@@ -67,16 +67,59 @@ struct RenderContext {
   
 }
 
+protocol RectangleCornerLayout {
+  
+  typealias IndexType = uint16
+  
+  static var bottomLeftCornerOffset: IndexType { get }
+  static var bottomRightCornerOffset: IndexType { get }
+  static var topLeftCornerOffset: IndexType { get }
+  static var topRightCornerOffset: IndexType { get }
+  
+}
+
+
+extension RectangleCornerLayout {
+  
+  static func triangleIndicies() -> [IndexType] {
+    return [bottomLeftCornerOffset, topRightCornerOffset, topLeftCornerOffset,
+            bottomLeftCornerOffset, bottomRightCornerOffset, topRightCornerOffset]
+  }
+  
+  static func triangleIndicies(fromRectangle begin: Int) -> [IndexType] {
+    return triangleIndicies().map { index in return IndexType(begin) * 4 + index }
+  }
+  
+  static func lineIndicies() -> [IndexType] {
+    return [bottomLeftCornerOffset, bottomRightCornerOffset,
+            bottomRightCornerOffset, topRightCornerOffset,
+            topRightCornerOffset, topLeftCornerOffset,
+            topLeftCornerOffset, bottomLeftCornerOffset]
+  }
+  
+  static func lineIndicies(fromRectangle begin: Int) -> [IndexType] {
+    return lineIndicies().map { index in return IndexType(begin) * 4 + index }
+  }
+  
+  static var metalIndexType: MTLIndexType { return MTLIndexType.uint16 }
+  
+}
+
 
 protocol GridDescriptor {
   
   associatedtype BlockCollection: Collection where BlockCollection.Element == Block
   associatedtype VertexCollection: Collection where VertexCollection.Element == Vertex
+  associatedtype IndiciesLayout: RectangleCornerLayout
   
   var width: Int { get }
   var height: Int { get }
+  var primitiveType: MTLPrimitiveType { get }
+  
   var matrixBuffer: MTLBuffer { get }
   var matrixBufferIndex: Int { get }
+  
+  var indexBuffer: MTLBuffer { get }
   
   init?(with device: MTLDevice)
   
@@ -85,10 +128,12 @@ protocol GridDescriptor {
 }
 
 
-extension GridDescriptor {
+fileprivate extension GridDescriptor {
+  
+  typealias Index = IndiciesLayout.IndexType
   typealias Matrix = float4x4
   
-  var scalar: Matrix {
+  private static func scalar(width: Int, height: Int) -> Matrix {
     let w = 2 / Float(width)
     let h = 2 / Float(height)
     
@@ -98,17 +143,68 @@ extension GridDescriptor {
                   float4(0, 0, 0, 1))
   }
   
-  var translate: Matrix {
+  private static var translate: Matrix {
     return Matrix(float4(1, 0, 0, -1),
                   float4(0, 1, 0, -1),
                   float4(0, 0, 1,  0),
                   float4(0, 0, 0,  1))
   }
-
-  var matrix: Matrix {
-    return scalar * translate
+  
+  static func matrix(width: Int, height: Int) -> Matrix {
+    return scalar(width: width, height: height) * translate
   }
+  
+  private static func triangleIndicies(width: Int, height: Int) -> [Index] {
+    return Array((0..<(width * height)).map { (n) -> [Index] in
+      return IndiciesLayout.triangleIndicies(fromRectangle: n)
+      
+      }.joined())
+  }
+  
+  private static func lineIndicies(width: Int, height: Int) -> [Index] {
+    return Array((0..<(width * height)).map { (n) -> [Index] in
+      return IndiciesLayout.lineIndicies(fromRectangle: n)
+      
+    }.joined())
+  }
+  
+  static func indicies(width: Int, height: Int, primitiveType: MTLPrimitiveType) -> [Index] {
+    switch primitiveType {
+    case .triangle: return triangleIndicies(width: width, height: height)
+    case .line: return lineIndicies(width: width, height: height)
+    default: return []
+    }
+  }
+  
+  var indicies: [IndiciesLayout.IndexType] {
+    return Self.indicies(width: width, height: height, primitiveType: primitiveType)
+  }
+  
+  var matrix: Matrix { return Self.matrix(width: width, height: height) }
+  
+  static func makeMatrixBuffer(with device: MTLDevice, matrix: Matrix) -> MTLBuffer? {
+    let buffer = device.makeBuffer(length: MemoryLayout<Matrix>.size, options: .storageModeShared)
+    buffer?.contents().storeBytes(of: matrix, as: Matrix.self)
     
+    return buffer
+  }
+  
+  static func makeIndexBuffer(with device: MTLDevice, indicies: [Index]) -> MTLBuffer? {
+    guard let buffer = device.makeBuffer(length: MemoryLayout<Index>.stride * indicies.count, options: .storageModeShared) else { return nil }
+
+    let data = Data(buffer: indicies.withUnsafeBufferPointer { return $0 })
+    data.copyBytes(to: UnsafeMutablePointer<UInt8>(OpaquePointer(buffer.contents())), count: data.count)
+    
+    return buffer
+  }
+  
+  static func makeBuffers(with device: MTLDevice, width: Int, height: Int, primitiveType: MTLPrimitiveType) -> (matrixBuffer: MTLBuffer, indexBuffer: MTLBuffer)? {
+    guard let matrixBuffer = Self.makeMatrixBuffer(with: device, matrix: Self.matrix(width: width, height: height)) else { return nil }
+    guard let indexBuffer = Self.makeIndexBuffer(with: device, indicies: Self.indicies(width: width, height: height, primitiveType: primitiveType)) else { return nil }
+    
+    return (matrixBuffer, indexBuffer)
+  }
+  
 }
 
 
@@ -142,10 +238,15 @@ class GridRenderer<GridDescriptorType: GridDescriptor>: NSObject, MTKViewDelegat
     let verticies = Array(gridDescriptor.verticies(for: blocks))
     
     renderEncoder.setRenderPipelineState(renderContext.pipelineState)
+    
     renderEncoder.setVertexBytes(verticies, length: MemoryLayout<Vertex>.stride * verticies.count, index: GraphicResource.verticies)
     renderEncoder.setVertexBuffer(gridDescriptor.matrixBuffer, offset: 0, index: gridDescriptor.matrixBufferIndex)
     
-    renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: verticies.startIndex, vertexCount: verticies.count)
+    renderEncoder.drawIndexedPrimitives(type: gridDescriptor.primitiveType,
+                                        indexCount: gridDescriptor.indicies.count,
+                                        indexType: GridDescriptorType.IndiciesLayout.metalIndexType,
+                                        indexBuffer: gridDescriptor.indexBuffer,
+                                        indexBufferOffset: 0)
     
     renderEncoder.endEncoding()
     
@@ -158,40 +259,75 @@ class GridRenderer<GridDescriptorType: GridDescriptor>: NSObject, MTKViewDelegat
 }
 
 
-struct ShapeGridDescriptor: GridDescriptor {
+fileprivate enum Color {
+  
+  case red
+  case yellow
+  case green
+  case cyan
+  
+  var value: float4 {
+    switch self {
+    case .red: return float4(1, 0, 0, 1)
+    case .yellow: return float4(1, 1, 0, 1)
+    case .green: return float4(0, 1, 0, 1)
+    case .cyan: return float4(0, 1, 1, 1)
+    }
+  }
+  
+  var shadow: float4 { return self.value - float4(0.2, 0.2, 0.2, 0) }
+  
+}
 
-  typealias BlockCollection = Shape.BlockCollection
+
+struct ShapeGridDescriptor: GridDescriptor {
+  
   typealias VertexCollection = FlattenBidirectionalCollection<[[Vertex]]>
+  
+  struct IndiciesLayout: RectangleCornerLayout {
+    
+    typealias IndexType = uint16
+    
+    static var bottomLeftCornerOffset: IndexType { return 0 }
+    static var bottomRightCornerOffset: IndexType { return 1 }
+    static var topLeftCornerOffset: IndexType { return 2 }
+    static var topRightCornerOffset: IndexType { return 3 }
+    
+  }
   
   let width: Int = 4
   let height: Int = 4
-  let matrixBufferIndex: Int = GraphicResource.shapeMatrix
+  let primitiveType = MTLPrimitiveType.line
   
   let matrixBuffer: MTLBuffer
+  let matrixBufferIndex: Int = GraphicResource.shapeMatrix
+  
+  let indexBuffer: MTLBuffer
   
   init?(with device: MTLDevice) {
+    guard let buffers = ShapeGridDescriptor.makeBuffers(with: device, width: width, height: height, primitiveType: primitiveType) else { return nil }
     
-    guard let matrixBuffer = device.makeBuffer(length: MemoryLayout<GridDescriptor.Matrix>.stride, options: .storageModeShared) else { return nil }
-    self.matrixBuffer = matrixBuffer
-    
-    matrixBuffer.contents().storeBytes(of: matrix, as: GridDescriptor.Matrix.self)
+    matrixBuffer = buffers.matrixBuffer
+    indexBuffer = buffers.indexBuffer
   }
   
   func verticies(for blocks: Shape.BlockCollection) -> VertexCollection {
-    return blocks.filter({ block in return !block.status.empty }).map({ (block) -> [Vertex] in
+    return zip(blocks.filter({ block in return !block.status.empty }), [Color.red, Color.yellow, Color.green, Color.cyan])
+      
+    .map({ (pair) -> [Vertex] in
+      let (block, color) = pair
+      
       let (bl, br, tl, tr) = block.position.corners()
       
-      return [Vertex(position: float2(Float(bl.x), Float(bl.y)), color: float4(0.7, 0.7, 0.1, 1.0)),
-              Vertex(position: float2(Float(br.x), Float(br.y)), color: float4(0.7, 0.7, 0.1, 1.0)),
-              Vertex(position: float2(Float(tl.x), Float(tl.y)), color: float4(0.8, 0.8, 0.1, 1.0)),
-              Vertex(position: float2(Float(tr.x), Float(tr.y)), color: float4(0.8, 0.8, 0.1, 1.0))]
+      return [Vertex(position: float2(Float(bl.x), Float(bl.y)), color: color.shadow),
+              Vertex(position: float2(Float(br.x), Float(br.y)), color: color.shadow),
+              Vertex(position: float2(Float(tl.x), Float(tl.y)), color: color.value),
+              Vertex(position: float2(Float(tr.x), Float(tr.y)), color: color.value)]
     }).joined()
   }
   
 }
 
+typealias ShapeRenderer = GridRenderer<ShapeGridDescriptor>
 
-class ShapeRenderer: GridRenderer<ShapeGridDescriptor> {
-
-}
 
