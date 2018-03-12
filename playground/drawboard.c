@@ -79,7 +79,7 @@ static void __fall(jsTetrisState *state)
 {
 	do {
 		js_move_shape(state, (jsVec2i) {0, -1});
-		
+
 	} while(!(state->status & JS_STATE_BOARD_CHANGE));
 }
 
@@ -120,9 +120,6 @@ int main(int argc, char *argv[])
 		input = getch();
 
 		switch(input) {
-		case KEY_UP:
-			js_move_shape(state, (jsVec2i) {0, 1});
-			break;
 		case KEY_DOWN:
 			js_move_shape(state, (jsVec2i) {0, -1});
 			break;
@@ -132,6 +129,7 @@ int main(int argc, char *argv[])
 		case KEY_LEFT:
 			js_move_shape(state, (jsVec2i) {-1, 0});
 			break;
+		case KEY_UP:
 		case 'r':
 			js_rotate_shape(state, jsRotationClockwise);
 			break;

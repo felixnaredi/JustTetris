@@ -180,7 +180,10 @@ void js_clear_state_status(jsTetrisState *state);
 
 #define JS_STATE_CHANGE \
 	(JS_STATE_SHAPE_CHANGE | JS_STATE_BOARD_CHANGE | JS_STATE_NEXT_SHAPE_CHANGE \
-	 JS_STATE_ROWS_CHANGE | JS_STATE_LEVEL_CHANGE | JS_STATE_SCORE_CHANGE)
+ 	 JS_STATE_ROWS_CHANGE | JS_STATE_LEVEL_CHANGE | JS_STATE_SCORE_CHANGE)
+
+#define JS_STATE_MERGE \
+	(JS_STATE_SHAPE_CHANGE | JS_STATE_BOARD_CHANGE | JS_STATE_NEXT_SHAPE_CHANGE)
 
 void js_move_shape(jsTetrisState *state, jsVec2i offset);
 void js_force_shape(jsTetrisState *state, jsVec2i offset);
