@@ -3,17 +3,6 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "GridRenderer.draw(in:):GridRenderer.swift">
-         <PersistentStrings>
-            <PersistentString
-               value = "view.currentRenderPassDescriptor">
-            </PersistentString>
-            <PersistentString
-               value = "view.frame">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
          contextName = "ViewController.breakPoint(_:):ViewController.swift">
          <PersistentStrings>
             <PersistentString
@@ -31,6 +20,28 @@
                value = "delegate">
             </PersistentString>
          </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "GridRenderer.draw(in:):GridRenderer.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "view.currentRenderPassDescriptor">
+            </PersistentString>
+            <PersistentString
+               value = "view.frame">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "GridDescriptor.loadVertexBuffer(_:with:):GridDescriptor.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "verticies(for: blocks)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #2 in TriangleFillGridDescriptor.verticies(for:):GridDescriptor.swift">
       </ContextState>
    </ContextStates>
 </VariablesViewState>
