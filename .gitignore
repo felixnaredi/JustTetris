@@ -1,4 +1,6 @@
 *.o
+*.s
+*.ir
 *~
 .backup
 log

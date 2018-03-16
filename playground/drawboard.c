@@ -80,7 +80,7 @@ static void __fall(jsTetrisState *state)
 	do {
 		js_move_shape(state, (jsVec2i) {0, -1});
 
-	} while(!(state->status & JS_STATE_BOARD_CHANGE));
+	} while(!(state->status & JS_STATE_CHANGED_BOARD));
 }
 
 int main(int argc, char *argv[])
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		if(state->status & JS_STATE_SCORE_CHANGE)
+		if(state->status & JS_STATE_CHANGED_SCORE)
 			JS_DEBUG_VALUE(main, state->score, "%f");
 
 		if(state->status & JS_STATE_GAME_OVER) {

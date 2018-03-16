@@ -83,6 +83,7 @@ static jsBlock __js_empty_block()
 	return (jsBlock) {0, -1, -1};
 }
 
+/// Global wrapper of '__js_empty_block'.
 jsBlock js_empty_block()
 {
   return __js_empty_block();
@@ -110,6 +111,12 @@ static jsBoard __js_empty_board()
 		board.rows[i] = __js_empty_row();
 
 	return board;
+}
+
+/// Returns the blocks for the shape at a given index.
+static const jsBlock *__js_blocks_at(int index)
+{
+	return shape_data[index].blocks;
 }
 
 /// Makes a shape from the given index, corresponding to the data in
@@ -181,7 +188,7 @@ void js_init_tetris_state(jsTetrisState *state)
 {
 	JS_DEBUG_NULLPTR(js_init_tetris_state, state, err);
 
-	state->status = 0;
+	state->status = JS_STATE_CLEAR;
 	*state->board = __js_empty_board();
 	*state->shape = __js_make_shape(__js_gen_shape_index());
 	*state->next_shape = __js_make_shape(__js_gen_shape_index());
@@ -195,9 +202,16 @@ err:
 	return;
 }
 
+/// Clears the status of the tetris state.
 void js_clear_state_status(jsTetrisState *state)
 {
-	state->status = 0;
+	state->status = JS_STATE_CLEAR;
+}
+
+/// Returns true if the tetris state status has been modified.
+bool js_state_is_modified(const jsTetrisState *state)
+{
+	return state->status != JS_STATE_CLEAR;
 }
 
 /// Returns true if the block is empty.
@@ -324,8 +338,8 @@ static float __js_score_rows(int rows, int level) {
 	switch (rows) {
 	case 1: return 1.0 * multiplier;
 	case 2: return 3.0 * multiplier;
-	case 3: return 7.0 * multiplier;
-	case 4: return 15.0 * multiplier;
+	case 3: return 6.0 * multiplier;
+	case 4: return 10.0 * multiplier;
 	default: return 0;
 	}
 }
@@ -340,20 +354,23 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 	int rows_cleared, level, status = 0;
 
 	if(!__js_overlapp(board, shape, offset)) {
+		status |= JS_STATE_MOVE_SUCCEDED;
+
 		if(freeze) {
 			__js_reset_countdown(state);
 			status |= JS_STATE_RESET_COUNTDOWN;
 		}
 
-		shape->offset = js_vec2i_add(shape->offset, offset);
-
-		status |= JS_STATE_SHAPE_CHANGE;
+		if(!js_vec2i_equal(offset, (jsVec2i) {0, 0})) {
+			shape->offset = js_vec2i_add(shape->offset, offset);
+			status |= JS_STATE_CHANGED_SHAPE_OFFSET;
+		}
 
 		if(score < 0)
 			return status;
 
 		state->score += score * __js_level_multiplier(state->level);
-		return status | JS_STATE_SCORE_CHANGE;
+		return status | JS_STATE_CHANGED_SCORE;
 	}
 
 	if(!freeze)
@@ -364,7 +381,8 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 	*shape = *next_shape;
 	*next_shape = __js_make_shape(__js_gen_shape_index());
 
-	status |= JS_STATE_MERGE;
+	status |= JS_STATE_CHANGED_SHAPE_OFFSET | JS_STATE_CHANGED_SHAPE_INDEX |
+		JS_STATE_CHANGED_NEXT_SHAPE | JS_STATE_CHANGED_BOARD;
 
 	rows_cleared = __js_clear_rows(board);
 
@@ -382,14 +400,14 @@ static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double s
 	state->rows += rows_cleared;
 	state->score += __js_score_rows(rows_cleared, level);
 
-	status |= JS_STATE_ROWS_CHANGE | JS_STATE_SCORE_CHANGE;
+	status |= JS_STATE_CHANGED_ROWS | JS_STATE_CHANGED_SCORE;
 
 	if(level == state->level)
 		return status;
 
 	state->level = level;
 
-	return status | JS_STATE_LEVEL_CHANGE;
+	return status | JS_STATE_CHANGED_LEVEL;
 }
 
 #ifdef JS_DEBUG
@@ -493,19 +511,20 @@ void js_rotate_shape(jsTetrisState *state, jsRotation rot)
 		}
 	#endif /* JS_DEBUG */
 
+	int status;
 	jsShape *shape = state->shape;
 	const jsBlock *old_blocks = shape->blocks;
-	int result, index = __js_rotate_shape_index(shape->index, rot);
+	int index = __js_rotate_shape_index(shape->index, rot);
 
-	shape->blocks = __js_make_shape(index).blocks;
+	shape->blocks = __js_blocks_at(index);
 
-	result = __js_move(state, (jsVec2i) {0, 0}, false, -1);
+	status = __js_move(state, (jsVec2i) {0, 0}, false, -1);
 
-	if(!result) {
+	if(!(status & JS_STATE_MOVE_SUCCEDED)) {
 		shape->blocks = old_blocks;
 		return;
 	}
 
 	shape->index = index;
-	state->status |= result;
+	state->status |= status | JS_STATE_CHANGED_SHAPE_INDEX;
 }
