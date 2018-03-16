@@ -168,18 +168,18 @@ void js_init_tetris_state(jsTetrisState *state);
 
 /// When a tetris states values are modified or checked by some functions the
 /// event will be stored in the status of the state.
-#define JS_STATE_CHANGED_SHAPE_OFFSET	0x00000001
+#define JS_STATE_CHANGED_SHAPE_OFFSET 0x00000001
 #define JS_STATE_CHANGED_SHAPE_INDEX  0x00000002
 #define JS_STATE_CHANGED_NEXT_SHAPE   0x00000004
-#define JS_STATE_CHANGED_BOARD 				0x00000008
-#define JS_STATE_CHANGED_ROWS      		0x00000010
-#define JS_STATE_CHANGED_LEVEL      	0x00000020
-#define JS_STATE_CHANGED_SCORE      	0x00000040
+#define JS_STATE_CHANGED_BOARD        0x00000008
+#define JS_STATE_CHANGED_ROWS         0x00000010
+#define JS_STATE_CHANGED_LEVEL        0x00000020
+#define JS_STATE_CHANGED_SCORE        0x00000040
 #define JS_STATE_MOVE_SUCCEDED        0x00000080
-#define JS_STATE_RESET_COUNTDOWN   		0x00000100
-#define JS_STATE_GAME_OVER         		0x00000200
+#define JS_STATE_RESET_COUNTDOWN      0x00000100
+#define JS_STATE_GAME_OVER            0x00000200
 
-#define JS_STATE_CLEAR								0x00000000
+#define JS_STATE_CLEAR                0x00000000
 
 void js_clear_state_status(jsTetrisState *state);
 bool js_state_is_modified(const jsTetrisState *state);
