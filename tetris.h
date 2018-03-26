@@ -88,7 +88,7 @@ typedef union
 	jsRow rows[JS_BOARD_ROW_AMOUNT];
 } jsBoard;
 
-jsBoard js_empty_board();
+jsBoard js_empty_board(void);
 
 
 #define JS_SHAPE_ROW_AMOUNT 4
@@ -112,7 +112,7 @@ typedef struct
 	jsVec2i offset;
 } jsShape;
 
-jsShape js_rand_shape();
+jsShape js_rand_shape(void);
 
 
 typedef enum {

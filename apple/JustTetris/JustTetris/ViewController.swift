@@ -103,15 +103,8 @@ class ViewController: NSViewController {
   
   @IBAction func breakPoint(_ sender: Any?) { }
   
-  static func makeShape() -> Shape? {
-    guard let state = js_alloc_tetris_state() else { return nil }
-    js_init_tetris_state(state)
-    
-    let shape = Shape(state.pointee.shape.pointee)
-    
-    js_dealloc_tetris_state(state)
-    
-    return shape
+  static func makeShape() -> Shape {
+    return Shape(js_rand_shape())
   }
   
   func changeShape() { shape = ViewController.makeShape() }

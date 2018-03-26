@@ -14,11 +14,11 @@
 		0AD420222051889800FBC153 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0AD420202051889800FBC153 /* MainMenu.xib */; };
 		0AD420312051898300FBC153 /* tetris.c in Sources */ = {isa = PBXBuildFile; fileRef = 0AD4202B2051898200FBC153 /* tetris.c */; };
 		0AD420322051898300FBC153 /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = 0AD4202D2051898200FBC153 /* debug.c */; };
-		0AD420342051898300FBC153 /* math.c in Sources */ = {isa = PBXBuildFile; fileRef = 0AD420302051898200FBC153 /* math.c */; };
 		0AD4203620518CB900FBC153 /* Window.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0AD4203520518CB900FBC153 /* Window.xib */; };
 		0AD420382051905100FBC153 /* Tetris.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD420372051905100FBC153 /* Tetris.swift */; };
 		0AD4203C20519C4C00FBC153 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD4203B20519C4C00FBC153 /* ViewController.swift */; };
 		0AE19D8F2053117E00BB754D /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19D8E2053117E00BB754D /* Shaders.metal */; };
+		0AF205A02069A5CA00608A8F /* vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 0AF2059F2069A5C900608A8F /* vector.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,11 +36,12 @@
 		0AD4202C2051898200FBC153 /* tetris.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tetris.h; path = ../../../tetris.h; sourceTree = "<group>"; };
 		0AD4202D2051898200FBC153 /* debug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = debug.c; path = ../../../debug.c; sourceTree = "<group>"; };
 		0AD4202E2051898200FBC153 /* build.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = build.h; path = ../../../build.h; sourceTree = "<group>"; };
-		0AD420302051898200FBC153 /* math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = math.c; path = ../../../math.c; sourceTree = "<group>"; };
 		0AD4203520518CB900FBC153 /* Window.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Window.xib; sourceTree = "<group>"; };
 		0AD420372051905100FBC153 /* Tetris.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tetris.swift; sourceTree = "<group>"; };
 		0AD4203B20519C4C00FBC153 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		0AE19D8E2053117E00BB754D /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		0AF2059E2069A5C900608A8F /* vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vector.h; path = ../../../vector.h; sourceTree = "<group>"; };
+		0AF2059F2069A5C900608A8F /* vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vector.c; path = ../../../vector.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +74,8 @@
 		0AD4201B2051889800FBC153 /* JustTetris */ = {
 			isa = PBXGroup;
 			children = (
+				0AF2059F2069A5C900608A8F /* vector.c */,
+				0AF2059E2069A5C900608A8F /* vector.h */,
 				0AD4201C2051889800FBC153 /* AppDelegate.swift */,
 				0AD420372051905100FBC153 /* Tetris.swift */,
 				0AD4203B20519C4C00FBC153 /* ViewController.swift */,
@@ -82,7 +85,6 @@
 				0AE19D8E2053117E00BB754D /* Shaders.metal */,
 				0AD4202E2051898200FBC153 /* build.h */,
 				0AD4202D2051898200FBC153 /* debug.c */,
-				0AD420302051898200FBC153 /* math.c */,
 				0AD4202B2051898200FBC153 /* tetris.c */,
 				0AD4202C2051898200FBC153 /* tetris.h */,
 				0AD4201E2051889800FBC153 /* Assets.xcassets */,
@@ -168,7 +170,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0AD420342051898300FBC153 /* math.c in Sources */,
 				0AE19D8F2053117E00BB754D /* Shaders.metal in Sources */,
 				0AD420322051898300FBC153 /* debug.c in Sources */,
 				0AD420382051905100FBC153 /* Tetris.swift in Sources */,
@@ -176,6 +177,7 @@
 				0A93C84F2056D27600CA6ED6 /* GridDescriptor.swift in Sources */,
 				0AD4203C20519C4C00FBC153 /* ViewController.swift in Sources */,
 				0AD4201D2051889800FBC153 /* AppDelegate.swift in Sources */,
+				0AF205A02069A5CA00608A8F /* vector.c in Sources */,
 				0A5643A92057D7AD00F00BF6 /* GridRenderEncoder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -257,36 +257,8 @@ __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i offset)
 	return jsBlockPositionStatusValid;
 }
 
-/// Clears all full rows in board. By clearing a row, all rows above
-/// the cleared row will be lowered one step, the top row will be
-/// set to an empty row.
-///
-/// Returns the amount of rows cleared.
-static int __js_clear_rows(jsBoard *board)
-{
-	int i, count = 0;
-	jsRow *rows = board->rows;
-
-	for(i = 0; i < JS_BOARD_ROW_AMOUNT;) {
-		int j;
-
-		if(!__js_row_is_full(&board->rows[i])) {
-			i++;
-			continue;
-		}
-
-		for(j = i; j < JS_BOARD_ROW_AMOUNT - 1; j++)
-			rows[j] = rows[j + 1];
-
-		rows[JS_BOARD_ROW_AMOUNT - 1] = __js_empty_row();
-		count++;
-	}
-
-	return count;
-}
-
 /// Adds each block from shape, that is inside board, to board.
-//
+///
 /// Returns the amount of blocks that are outside board.
 static int __js_merge(jsBoard *board, const jsShape *shape)
 {
