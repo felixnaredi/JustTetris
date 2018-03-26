@@ -1,4 +1,3 @@
-
 //
 // Filename: tetris.c
 // Created: 2018-02-13 20:57:53 +0100
@@ -9,8 +8,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "tetris.h"
 #include "build.h"
+#include "tetris.h"
+#include "vector.h"
 
 #ifdef JS_USING_EMACS
 
@@ -71,12 +71,6 @@ static int __js_timer(int level)
 	return 120 / level;
 }
 
-/// Resets the countdown timer.
-static void __js_reset_countdown(jsTetrisState *state)
-{
-	state->countdown = state->timer;
-}
-
 /// Returns an empty block.
 static jsBlock __js_empty_block()
 {
@@ -113,6 +107,12 @@ static jsBoard __js_empty_board()
 	return board;
 }
 
+/// Global wrapper for '__js_empty_board'
+jsBoard js_empty_board()
+{
+	return __js_empty_board();
+}
+
 /// Returns the blocks for the shape at a given index.
 static const jsBlock *__js_blocks_at(int index)
 {
@@ -125,9 +125,9 @@ static const jsBlock *__js_blocks_at(int index)
 /// Returns the shape for the index.
 static jsShape __js_make_shape(int index)
 {
-	const __jsShapeData *shapeData = &shape_data[index];
+	const __jsShapeData *data = &shape_data[index];
 
-	return (jsShape) {shapeData->offset, index, shapeData->blocks};
+	return (jsShape){data->blocks, index, data->offset};
 }
 
 /// Generates a random index of a shape pointing to the first shape of a form.
@@ -138,80 +138,10 @@ static int __js_gen_shape_index()
 	return shape_index_ranges[rand() % JS_SHAPE_INDEX_RANGES_LENGTH].min;
 }
 
-/// Allocates the size of type to var.
-/// If allocation fails it jumps to 'label'. Therefor must functions using
-/// 'JS_ALLOC' provide an error label.
-#define JS_ALLOC(var, type, label) \
-	var = malloc(sizeof(type)); \
-	if(var == NULL) goto label
-
-/// Frees var as long as it isn't NULL.
-#define JS_DEALLOC(var) if(var != NULL) free(var)
-
-/// Allocates a jsTetrisState.
-///
-/// Returns pointer to the allocated structure or NULL if failure.
-jsTetrisState *js_alloc_tetris_state()
+/// Returns a random shape from the first of each formation.
+jsShape js_rand_shape()
 {
-	jsTetrisState *state;
-
-	JS_ALLOC(state, jsTetrisState, err);
-	JS_ALLOC(state->board, jsBoard, err);
-	JS_ALLOC(state->shape, jsShape, err);
-	JS_ALLOC(state->next_shape, jsShape, err);
-
-	return state;
-
-err:
-	JS_DEBUG_PUTS(js_alloc_tetris_state, "failed alloc");
-	js_dealloc_tetris_state(state);
-
-	return NULL;
-}
-
-/// Deallocates a jsTetrisState.
-void js_dealloc_tetris_state(jsTetrisState *state)
-{
-	JS_DEBUG_NULLPTR(js_dealloc_tetris_state, state, err);
-
-	JS_DEALLOC(state->next_shape);
-	JS_DEALLOC(state->shape);
-	JS_DEALLOC(state->board);
-	JS_DEALLOC(state);
-
-err:
-	return;
-}
-
-/// Initailizes a jsTetrisState as it is at a new game.
-void js_init_tetris_state(jsTetrisState *state)
-{
-	JS_DEBUG_NULLPTR(js_init_tetris_state, state, err);
-
-	state->status = JS_STATE_CLEAR;
-	*state->board = __js_empty_board();
-	*state->shape = __js_make_shape(__js_gen_shape_index());
-	*state->next_shape = __js_make_shape(__js_gen_shape_index());
-	state->rows = 0;
-	state->level = 1;
-	state->score = 0;
-	state->timer = __js_timer(1);
-	__js_reset_countdown(state);
-
-err:
-	return;
-}
-
-/// Clears the status of the tetris state.
-void js_clear_state_status(jsTetrisState *state)
-{
-	state->status = JS_STATE_CLEAR;
-}
-
-/// Returns true if the tetris state status has been modified.
-bool js_state_is_modified(const jsTetrisState *state)
-{
-	return state->status != JS_STATE_CLEAR;
+	return __js_make_shape(__js_gen_shape_index());
 }
 
 /// Returns true if the block is empty.
@@ -240,16 +170,74 @@ static bool __js_row_is_full(const jsRow *row)
 	return true;
 }
 
+jsClearRowsResult js_clear_rows_result(const jsBoard *board)
+{
+	int i, *indicies, count = 0;
+	jsClearRowsResult result;
+
+	indicies = result.indicies;
+
+	for(i = 0; i < JS_BOARD_ROW_AMOUNT; i++) {
+		if(__js_row_is_full(&board->rows[i])) {
+			indicies[count] = i;
+			count++;
+		}
+	}
+
+	result.count = count;
+
+	return result;
+}
+
+/// Moves the blocks at row 'offset' amount in y dimension.
+static void __js_move_row(jsRow *row, int offset)
+{
+	int x;
+
+	for(x = 0; x < JS_BOARD_COLUMN_AMOUNT; x++)
+		row->blocks[x].position.y += offset;
+}
+
+/// Returns true if rows were cleared.
+bool js_clear_board_rows(jsBoard *board, const jsClearRowsResult *result)
+{
+	int i;
+	jsRow *rows = board->rows;
+
+	if(result->count == 0)
+		return false;
+
+	// Reversed iteration of full row indicies.
+	for(i = result->count - 1; i > -1; i--) {
+		int j;
+
+		for(j = result->indicies[i]; j < JS_BOARD_ROW_AMOUNT - 1; j++) {
+			rows[j] = rows[j + 1];
+			__js_move_row(&rows[j], -1);
+		}
+	}
+
+	rows[JS_BOARD_ROW_AMOUNT - 1] = __js_empty_row();
+
+	return true;
+}
+
 static bool __js_outside_board(jsVec2i pos)
 {
 	return pos.x < 0 || pos.y < 0 || pos.x >= JS_BOARD_COLUMN_AMOUNT ||
 		pos.y >= JS_BOARD_ROW_AMOUNT;
 }
 
+typedef enum {
+	jsBlockPositionStatusValid     = 0,
+	jsBlockPositionStatusOverlapp,
+	jsBlockPositionStatusOutside,
+} __jsBlockPositionStatus;
+
 /// Returns true if at least one of the blocks in shape are at the
 /// same position as a non empty block in board or if at least one
 /// block in shape are outside the bounds of board.
-static bool
+static __jsBlockPositionStatus
 __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i offset)
 {
 	int i;
@@ -260,13 +248,13 @@ __js_overlapp(const jsBoard *board, const jsShape *shape, jsVec2i offset)
 			js_vec2i_add(blocks[i].position, shape->offset), offset);
 
 		if(__js_outside_board(pos))
-			return true;
+			return jsBlockPositionStatusOutside;
 
 		if(!__js_block_is_empty(board->pos[pos.y][pos.x]))
-			return true;
+			return jsBlockPositionStatusOverlapp;
 	}
 
-	return false;
+	return jsBlockPositionStatusValid;
 }
 
 /// Clears all full rows in board. By clearing a row, all rows above
@@ -314,20 +302,35 @@ static int __js_merge(jsBoard *board, const jsShape *shape)
 			continue;
 		}
 
+		block.position = pos;
 		board->pos[pos.y][pos.x] = block;
 	}
 
 	return count;
 }
 
+/// Merges shape and board. Moves shape upwards until it doesn't overlapp with
+/// the board.
+int js_merge(jsBoard *board, const jsShape *shape)
+{
+	jsVec2i offset = {0, 0};
+
+	while(__js_overlapp(board, shape, offset) == jsBlockPositionStatusOverlapp)
+		offset.y += 1;
+
+	return __js_merge(board, shape);
+}
+
 /// Returns the level for the given amount of rows.
-static int __js_get_level(int rows) {
+static int __js_get_level(int rows)
+{
 	return rows / 8 + 1;
 }
 
 /// Returns a score multiplier for the given level.
-static float __js_level_multiplier(int level) {
-	return (float) level / 8.0 + 1.0;
+static float __js_level_multiplier(int level)
+{
+	return (float)level / 8.0 + 1.0;
 }
 
 /// Returns the score clearing the given amount of rows is worth for the current
@@ -344,132 +347,35 @@ static float __js_score_rows(int rows, int level) {
 	}
 }
 
-/// Set score to less than 0 if a successfull move shouldn't give any score.
 ///
-/// Returns the status affected by the move.
-static int __js_move(jsTetrisState *state, jsVec2i offset, bool freeze, double score)
+jsTranslationResult js_translate_result(const jsShape *shape, const jsBoard *board, jsVec2i vector)
 {
-	jsBoard *board = state->board;
-	jsShape *shape = state->shape, *next_shape = state->next_shape;
-	int rows_cleared, level, status = 0;
+	if(js_vec2i_equal(vector, (jsVec2i){0, 0}))
+		return (jsTranslationResult){jsMoveStatusMute, vector, shape->offset};
 
-	if(!__js_overlapp(board, shape, offset)) {
-		status |= JS_STATE_MOVE_SUCCEDED;
+	if(!__js_overlapp(board, shape, vector)) {
+		jsVec2i new_position = js_vec2i_add(shape->offset, vector);
 
-		if(freeze) {
-			__js_reset_countdown(state);
-			status |= JS_STATE_RESET_COUNTDOWN;
-		}
+		if(vector.y < 0)
+			return (jsTranslationResult){jsMoveStatusScore, vector, new_position};
 
-		if(!js_vec2i_equal(offset, (jsVec2i) {0, 0})) {
-			shape->offset = js_vec2i_add(shape->offset, offset);
-			status |= JS_STATE_CHANGED_SHAPE_OFFSET;
-		}
-
-		if(score < 0)
-			return status;
-
-		state->score += score * __js_level_multiplier(state->level);
-		return status | JS_STATE_CHANGED_SCORE;
+		return (jsTranslationResult){jsMoveStatusSuccess, vector, new_position};
 	}
 
-	if(!freeze)
-		return 0;
+	if(vector.y < 0)
+		return (jsTranslationResult){jsMoveStatusMerge, vector, shape->offset};
 
-	__js_merge(board, shape);
-
-	*shape = *next_shape;
-	*next_shape = __js_make_shape(__js_gen_shape_index());
-
-	status |= JS_STATE_CHANGED_SHAPE_OFFSET | JS_STATE_CHANGED_SHAPE_INDEX |
-		JS_STATE_CHANGED_NEXT_SHAPE | JS_STATE_CHANGED_BOARD;
-
-	rows_cleared = __js_clear_rows(board);
-
-	if(rows_cleared == 0) {
-		// Game over accures when the new shape overlapps with its
-		// initial offset.
-		if(__js_overlapp(board, shape, (jsVec2i) {0, 0}))
-			return status | JS_STATE_GAME_OVER;
-
-		return status;
-	}
-
-	level = __js_get_level(state->rows + rows_cleared);
-
-	state->rows += rows_cleared;
-	state->score += __js_score_rows(rows_cleared, level);
-
-	status |= JS_STATE_CHANGED_ROWS | JS_STATE_CHANGED_SCORE;
-
-	if(level == state->level)
-		return status;
-
-	state->level = level;
-
-	return status | JS_STATE_CHANGED_LEVEL;
+	return (jsTranslationResult){jsMoveStatusFailure, vector, shape->offset};
 }
 
-#ifdef JS_DEBUG
-
-/// Returns true if one or more non nullable pointers of state is
-/// NULL.
-static bool __js_debug_nonnull_state(const jsTetrisState *state)
+///
+jsShape js_translate_shape(const jsShape *shape, const jsTranslationResult *result)
 {
-	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state, err);
-	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->board, err);
-	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->shape, err);
-	JS_DEBUG_NULLPTR(__js_debug_nonnull_state, state->next_shape, err);
-
-	return false;
-
-err:
-	return true;
+	return (jsShape){shape->blocks, shape->index, result->new_position};
 }
 
-#endif /* JS_DEBUG */
-
-
-/// Moves the shape on the board of state. If the offsets y value is
-/// negative the move will generate score on success and 'freeze' the
-/// shape on overlap.
-void js_move_shape(jsTetrisState *state, jsVec2i offset)
-{
-#ifdef JS_DEBUG
-
-	if(__js_debug_nonnull_state(state)) {
-		JS_DEBUG_PUTS(js_move_shape, "state may not include NULL");
-		return;
-	}
-#endif /* JS_DEBUG */
-
-	bool freeze = false;
-	double score = -1.0;
-
-	if(offset.y < 0) {
-		freeze = true;
-		score = 0.3;
-	}
-
-	state->status |= __js_move(state, offset, freeze, score);
-}
-
-/// Moves the shape on the board of state with force. A forced move is
-/// never worth any score and if it overlaps it will always 'freeze'
-/// the shape.
-void js_force_shape(jsTetrisState *state, jsVec2i offset)
-{
-#ifdef JS_DEBUG
-
-	if(__js_debug_nonnull_state(state)) {
-		JS_DEBUG_PUTS(js_force_shape, "state may not include NULL");
-		return;
-	}
-#endif /* JS_DEBUG */
-
-	state->status |= __js_move(state, offset, true, -1);
-}
-
+/// Returns the index range for the formation that the shape at index belongs
+/// to.
 static __jsIndexRange __js_index_range_for_shape_index(int index)
 {
 	int i;
@@ -482,14 +388,14 @@ static __jsIndexRange __js_index_range_for_shape_index(int index)
 	}
 
 	// Invalid index.
-	return (__jsIndexRange) {-1, -1};
+	return (__jsIndexRange){-1, -1};
 }
 
 /// Returns next index given the rotation.
-static int __js_rotate_shape_index(int index, jsRotation rot)
+static int __js_rotate_shape_index(int index, jsRotation direction)
 {
 	__jsIndexRange range = __js_index_range_for_shape_index(index);
-	int new_index = index + (int) rot;
+	int new_index = index + (int) direction;
 
 	if(new_index > range.max)
 		return range.min;
@@ -500,31 +406,34 @@ static int __js_rotate_shape_index(int index, jsRotation rot)
 	return new_index;
 }
 
-/// Rotates the shape on the board of the state. Sets state status on success.
-void js_rotate_shape(jsTetrisState *state, jsRotation rot)
+jsRotationResult js_rotate_result(const jsShape *shape, const jsBoard *board, jsRotation direction)
 {
-	#ifdef JS_DEBUG
+	int new_index, index = shape->index;
+	jsShape new_shape;
+	__jsBlockPositionStatus position_status;
 
-		if(__js_debug_nonnull_state(state)) {
-			JS_DEBUG_PUTS(js_rotate_shape, "state may not include NULL");
-			return;
-		}
-	#endif /* JS_DEBUG */
+	if(direction == jsRotationNone)
+		return (jsRotationResult){jsMoveStatusMute, index, index};
 
-	int status;
-	jsShape *shape = state->shape;
-	const jsBlock *old_blocks = shape->blocks;
-	int index = __js_rotate_shape_index(shape->index, rot);
+	new_index = __js_rotate_shape_index(index, direction);
 
-	shape->blocks = __js_blocks_at(index);
+	new_shape.blocks = __js_blocks_at(new_index);
+	new_shape.index = new_index;
+	new_shape.offset = shape->offset;
 
-	status = __js_move(state, (jsVec2i) {0, 0}, false, -1);
+	position_status = __js_overlapp(board, &new_shape, (jsVec2i){0, 0});
 
-	if(!(status & JS_STATE_MOVE_SUCCEDED)) {
-		shape->blocks = old_blocks;
-		return;
-	}
+	if(position_status != jsBlockPositionStatusValid)
+		return (jsRotationResult){jsMoveStatusFailure, index, index};
 
-	shape->index = index;
-	state->status |= status | JS_STATE_CHANGED_SHAPE_INDEX;
+	return (jsRotationResult){jsMoveStatusSuccess, index, new_index};
+}
+
+jsShape js_rotate_shape(const jsShape *shape, const jsRotationResult *result)
+{
+	return (jsShape){
+		__js_blocks_at(result->new_shape_index),
+		result->new_shape_index,
+		shape->offset
+	};
 }

@@ -6,13 +6,11 @@ Just a simple implementation of Tetris - the best game around!
 
 ## Demos
 
-### **playground/drawboard.c**
-Working demo drawn in terminal. Has no timer.
+### **demos/game001.c**
+Working demo drawn in terminal. Has no timer and does not track score.
 
 #### *Build*
 ```bash
->$ playground/makemake ; make -C playground/ drawboard
+>$ tools/makemake demos ; make -C demos/ game001
 ```
-Run file at *playground/drawboard.o*
-
-
+Run file at *demos/game001.o*

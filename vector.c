@@ -1,10 +1,10 @@
-// 
+//
 // Filename: math.c
 // Created: 2018-02-09 21:18:04 +0100
 // Author: Felix Nared
 //
 
-#include "tetris.h"
+#include "vector.h"
 
 int js_vec2i_equal(jsVec2i a, jsVec2i b)
 {

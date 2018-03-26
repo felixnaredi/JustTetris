@@ -9,6 +9,8 @@
 
 #include <stdbool.h>
 
+#include "vector.h"
+
 #ifdef JS_USING_EMACS
 
 #include "emacs_ac_break.h"
@@ -60,46 +62,6 @@
 //   next cycle
 //
 
-#define js_max(a, b) (a > b ? a : b)
-#define js_min(a, b) (a < b ? a : b)
-#define js_abs(a) (a < 0 ? -a : a)
-
-typedef struct
-{
-	int x;
-	int y;
-} jsVec2i;
-
-typedef struct
-{
-	float x;
-	float y;
-} jsVec2f;
-
-typedef struct
-{
-	int x;
-	int y;
-	int z;
-} jsVec3i;
-
-typedef struct
-{
-	float x;
-	float y;
-	float z;
-} jsVec3f;
-
-int js_vec2i_equal(jsVec2i a, jsVec2i b);
-int js_vec2f_equal(jsVec2f a, jsVec2f b);
-int js_vec3i_equal(jsVec3i a, jsVec3i b);
-int js_vec3f_equal(jsVec3f a, jsVec3f b);
-
-jsVec2i js_vec2i_add(jsVec2i a, jsVec2i b);
-jsVec2f js_vec2f_add(jsVec2f a, jsVec2f b);
-jsVec3i js_vec3i_add(jsVec3i a, jsVec3i b);
-jsVec3f js_vec3f_add(jsVec3f a, jsVec3f b);
-
 
 typedef struct
 {
@@ -119,7 +81,6 @@ typedef struct
 	jsBlock blocks[JS_BOARD_COLUMN_AMOUNT];
 } jsRow;
 
-
 typedef union
 {
 	jsBlock pos[JS_BOARD_ROW_AMOUNT][JS_BOARD_COLUMN_AMOUNT];
@@ -127,16 +88,12 @@ typedef union
 	jsRow rows[JS_BOARD_ROW_AMOUNT];
 } jsBoard;
 
+jsBoard js_empty_board();
+
+
 #define JS_SHAPE_ROW_AMOUNT 4
 #define JS_SHAPE_COLUMN_AMOUNT 4
 #define JS_SHAPE_BLOCK_AMOUNT 4
-
-typedef struct
-{
-	jsVec2i offset;
-	int index;
-	const jsBlock *blocks;
-} jsShape;
 
 typedef enum {
 	jsShapeFormationO = 0x20000000,
@@ -148,51 +105,64 @@ typedef enum {
 	jsShapeFormationT = 0xE0000000,
 } jsShapeFormation;
 
+typedef struct
+{
+	const jsBlock *blocks;
+	int index;
+	jsVec2i offset;
+} jsShape;
+
+jsShape js_rand_shape();
+
+
+typedef enum {
+	jsMoveStatusMute,
+	jsMoveStatusFailure,
+	jsMoveStatusSuccess,
+	jsMoveStatusScore,
+	jsMoveStatusMerge,
+} jsMoveStatus;
 
 typedef struct
 {
-	int status;
-	jsBoard *board;
-	jsShape *shape;
-	jsShape *next_shape;
-	int rows;
-	int level;
-	double score;
-	int countdown;
-	int timer;
-} jsTetrisState;
+	jsMoveStatus status;
+	jsVec2i offset;
+	jsVec2i new_position;
+} jsTranslationResult;
 
-jsTetrisState *js_alloc_tetris_state(void);
-void js_dealloc_tetris_state(jsTetrisState *state);
-void js_init_tetris_state(jsTetrisState *state);
+jsTranslationResult js_translate_result(const jsShape *shape, const jsBoard *board, jsVec2i vector);
 
-/// When a tetris states values are modified or checked by some functions the
-/// event will be stored in the status of the state.
-#define JS_STATE_CHANGED_SHAPE_OFFSET 0x00000001
-#define JS_STATE_CHANGED_SHAPE_INDEX  0x00000002
-#define JS_STATE_CHANGED_NEXT_SHAPE   0x00000004
-#define JS_STATE_CHANGED_BOARD        0x00000008
-#define JS_STATE_CHANGED_ROWS         0x00000010
-#define JS_STATE_CHANGED_LEVEL        0x00000020
-#define JS_STATE_CHANGED_SCORE        0x00000040
-#define JS_STATE_MOVE_SUCCEDED        0x00000080
-#define JS_STATE_RESET_COUNTDOWN      0x00000100
-#define JS_STATE_GAME_OVER            0x00000200
-
-#define JS_STATE_CLEAR                0x00000000
-
-void js_clear_state_status(jsTetrisState *state);
-bool js_state_is_modified(const jsTetrisState *state);
-
-void js_move_shape(jsTetrisState *state, jsVec2i offset);
-void js_force_shape(jsTetrisState *state, jsVec2i offset);
+jsShape js_translate_shape(const jsShape *shape, const jsTranslationResult *result);
+int js_merge(jsBoard *board, const jsShape *shape);
+float js_translate_score(const jsTranslationResult *result);
 
 typedef enum {
+	jsRotationNone             =  0,
 	jsRotationClockwise        =  1,
 	jsRotationCounterClockwise = -1,
 } jsRotation;
 
-void js_rotate_shape(jsTetrisState *state, jsRotation rot);
+typedef struct
+{
+	jsMoveStatus status;
+	int old_shape_index;
+	int new_shape_index;
+} jsRotationResult;
+
+jsRotationResult js_rotate_result(const jsShape *shape, const jsBoard *board, jsRotation direction);
+jsShape js_rotate_shape(const jsShape *shape, const jsRotationResult *result);
+
+#define JS_ROW_CLEAR_MAX 4
+
+typedef struct
+{
+	int count;
+	int indicies[JS_ROW_CLEAR_MAX];
+} jsClearRowsResult;
+
+jsClearRowsResult js_clear_rows_result(const jsBoard *board);
+
+bool js_clear_board_rows(jsBoard *board, const jsClearRowsResult *result);
 
 
 #endif /* TETRIS_H */
