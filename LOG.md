@@ -5,9 +5,9 @@
 The current plan is to implement three different interfaces for the
 program.
 
-	**terminal**:	Written in C, drawn in the terminal.
-	**apple**:	Written in Swift, drawn with Cocoa and Metal.
-	**glfw**:	Written in C++, drawn in GLFW window.
+	terminal	: Written in C, drawn in the terminal.
+	apple		: Written in Swift, drawn with Cocoa and Metal.
+	glfw		: Written in C++, drawn in GLFW window.
 
 I know very little about OS:s other than macOS and Linux. But it would
 be nice to try and make iOS and/or Windows versions.
