@@ -74,11 +74,9 @@
 		0AD4201B2051889800FBC153 /* JustTetris */ = {
 			isa = PBXGroup;
 			children = (
-				0AF2059F2069A5C900608A8F /* vector.c */,
-				0AF2059E2069A5C900608A8F /* vector.h */,
 				0AD4201C2051889800FBC153 /* AppDelegate.swift */,
-				0AD420372051905100FBC153 /* Tetris.swift */,
 				0AD4203B20519C4C00FBC153 /* ViewController.swift */,
+				0AD420372051905100FBC153 /* Tetris.swift */,
 				0A5643A82057D7AD00F00BF6 /* GridRenderEncoder.swift */,
 				0A93C84E2056D27600CA6ED6 /* GridDescriptor.swift */,
 				0A5E3B972053178D003234D4 /* shader_types.h */,
@@ -87,6 +85,8 @@
 				0AD4202D2051898200FBC153 /* debug.c */,
 				0AD4202B2051898200FBC153 /* tetris.c */,
 				0AD4202C2051898200FBC153 /* tetris.h */,
+				0AF2059E2069A5C900608A8F /* vector.h */,
+				0AF2059F2069A5C900608A8F /* vector.c */,
 				0AD4201E2051889800FBC153 /* Assets.xcassets */,
 				0AD420202051889800FBC153 /* MainMenu.xib */,
 				0AD4203520518CB900FBC153 /* Window.xib */,

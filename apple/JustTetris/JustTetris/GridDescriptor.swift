@@ -157,7 +157,7 @@ fileprivate enum Color {
     case .green: return float4(0, 1, 0, 1)
     case .blue: return float4(0, 0, 1, 1)
     case .cyan: return float4(0, 1, 1, 1)
-    case .magenta: return float4(1, 0, 0, 1)
+    case .magenta: return float4(1, 0, 1, 1)
     case .yellow: return float4(1, 1, 0, 1)
     }
   }
@@ -189,18 +189,29 @@ struct TriangleFillGridDescriptor: GridDescriptor {
   
   var primitiveType: MTLPrimitiveType { return MTLPrimitiveType.triangle }
   
-  func verticies(for blocks: Shape.BlockCollection) -> VertexCollection {
-    return zip(blocks.filter({ block in return !block.status.empty }), [Color.red, Color.yellow, Color.green, Color.cyan])
-      
-      .map({ (pair) -> [Vertex] in
-        let (block, color) = pair
+  private static func color(for formation: Formation) -> Color {
+    switch formation {
+    case .Oh: return .red
+    case .Ie: return .white
+    case .Sa: return .yellow
+    case .Ze: return .green
+    case .Lo: return .blue
+    case .Je: return .cyan
+    case .To: return .magenta
+    }
+  }
+  
+  func verticies(for blocks: BlockCollection) -> VertexCollection {
+    return blocks.filter({ (block) -> Bool in return !block.isEmpty })
+      .map({ (block) -> [Vertex] in
         
-        let (bl, br, tl, tr) = block.position.corners()
+        let color = TriangleFillGridDescriptor.color(for: block.formation!)
+        let (bl, br, tl, tr) = block.position.corners
         
         return [Vertex(position: float2(Float(bl.x), Float(bl.y)), color: color.shadow),
                 Vertex(position: float2(Float(br.x), Float(br.y)), color: color.shadow),
-                Vertex(position: float2(Float(tl.x), Float(tl.y)), color: color.hightlight),
-                Vertex(position: float2(Float(tr.x), Float(tr.y)), color: color.hightlight)]
+                Vertex(position: float2(Float(tl.x), Float(tl.y)), color: color.value),
+                Vertex(position: float2(Float(tr.x), Float(tr.y)), color: color.value)]
       }).joined()
   }
   
@@ -228,12 +239,12 @@ struct LineBorderGridDescriptor: GridDescriptor {
   
   var primitiveType: MTLPrimitiveType { return MTLPrimitiveType.line }
   
-  func verticies(for blocks: Shape.BlockCollection) -> VertexCollection {
+  func verticies(for blocks: BlockCollection) -> VertexCollection {
     let color = Color.white.value
     
-    return blocks.filter { block in return !block.status.empty }
+    return blocks.filter { block in return !block.isEmpty }
       .map { (block) -> [Vertex] in
-        let (bl, br, tl, tr) = block.position.corners()
+        let (bl, br, tl, tr) = block.position.corners
         
         return [Vertex(position: float2(Float(bl.x), Float(bl.y)), color: color),
                 Vertex(position: float2(Float(br.x), Float(br.y)), color: color),

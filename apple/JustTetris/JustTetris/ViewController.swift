@@ -21,7 +21,7 @@ class RedView: NSView {
 }
 
 
-class ShapeView: MTKView {
+class GridView: MTKView {
   
   var mouseDownHandler: ((NSEvent) -> Void)?
   
@@ -41,7 +41,7 @@ class ShapeView: MTKView {
 
 class ViewController: NSViewController {
   
-  class ShapeViewDelegate: NSObject, MTKViewDelegate {
+  class GridViewDelegate: NSObject, MTKViewDelegate {
     
     typealias FillEncoder = GridRenderEncoder<TriangleFillGridDescriptor>
     typealias BorderEncoder = GridRenderEncoder<LineBorderGridDescriptor>
@@ -50,7 +50,7 @@ class ViewController: NSViewController {
     
     var fillEncoder: FillEncoder?
     var borderEncoder: BorderEncoder?
-    var blocks: Shape.BlockCollection?
+    var blocks: BlockCollection?
     
     init(fill: FillEncoder?, border: BorderEncoder?) {
       fillEncoder = fill
@@ -87,15 +87,17 @@ class ViewController: NSViewController {
     
   }
   
-  @IBOutlet var shapeView: ShapeView!
+  @IBOutlet var shapeView: GridView!
+  @IBOutlet var boardView: GridView!
   
-  var shapeViewDelegate: ShapeViewDelegate!
+  var shapeViewDelegate: GridViewDelegate!
+  var boardViewDelegate: GridViewDelegate!
   
   var shape: Shape? {
     didSet {
       guard let shape = shape else { return }
       
-      (shapeView.delegate as? ShapeViewDelegate)?.blocks = shape.blocks
+      (shapeView.delegate as? GridViewDelegate)?.blocks = shape.blocks
       
       shapeView.needsDisplay = true
     }
@@ -103,25 +105,35 @@ class ViewController: NSViewController {
   
   @IBAction func breakPoint(_ sender: Any?) { }
   
-  static func makeShape() -> Shape {
-    return Shape(js_rand_shape())
-  }
+  static func makeShape() -> Shape { return Shape(js_rand_shape()) }
   
   func changeShape() { shape = ViewController.makeShape() }
   
   override func viewDidLoad() {
-    guard let renderContext = RenderContext(with: shapeView) else { return }
-
-    let fillRenderer = GridRenderEncoder(renderContext: renderContext, gridDescriptor: TriangleFillGridDescriptor(width: 4, height: 4))
-    let borderRenderer = GridRenderEncoder(renderContext: renderContext, gridDescriptor: LineBorderGridDescriptor(width: 4, height: 4))
+    guard let shapeRenderContext = RenderContext(with: shapeView) else { return }
     
-    shapeViewDelegate = ShapeViewDelegate(fill: fillRenderer, border: borderRenderer)
-    shapeViewDelegate.renderContext = renderContext
+    shapeViewDelegate = GridViewDelegate(fill: GridRenderEncoder(renderContext: shapeRenderContext,
+                                                                 gridDescriptor: TriangleFillGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount)),
+                                          border: GridRenderEncoder(renderContext: shapeRenderContext,
+                                                                    gridDescriptor: LineBorderGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount)))
+    shapeViewDelegate.renderContext = shapeRenderContext
     
     shapeView.mouseDownHandler = { _ in self.changeShape() }
     shapeView.delegate = shapeViewDelegate
     
     changeShape()
+    
+    guard let boardRenderContext = RenderContext(with: boardView) else { return }
+    
+    boardViewDelegate = GridViewDelegate(fill: GridRenderEncoder(renderContext: boardRenderContext,
+                                                                 gridDescriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount)),
+                                         border: GridRenderEncoder(renderContext: boardRenderContext,
+                                                                   gridDescriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount)))
+    boardViewDelegate.renderContext = boardRenderContext
+    boardViewDelegate.blocks = Board.randomBoard.blocks
+    
+    boardView.delegate = boardViewDelegate
+    boardView.mouseDownHandler = { _ in self.boardViewDelegate.blocks = Board.randomBoard.blocks }
   }
   
 }

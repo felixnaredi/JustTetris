@@ -113,6 +113,7 @@ typedef struct
 } jsShape;
 
 jsShape js_rand_shape(void);
+jsShapeFormation js_block_formation(jsBlock block);
 
 
 typedef enum {

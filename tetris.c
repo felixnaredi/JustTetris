@@ -119,6 +119,11 @@ static const jsBlock *__js_blocks_at(int index)
 	return shape_data[index].blocks;
 }
 
+jsShapeFormation js_block_formation(jsBlock block)
+{
+  return block.status & JS_BLOCK_FORMATION;
+}
+
 /// Makes a shape from the given index, corresponding to the data in
 /// 'shape_data'.
 ///
@@ -207,7 +212,7 @@ bool js_clear_board_rows(jsBoard *board, const jsClearRowsResult *result)
 	if(result->count == 0)
 		return false;
 
-	// Reversed iteration of full row indicies.
+	// Reversed iteration of indicies.
 	for(i = result->count - 1; i > -1; i--) {
 		int j;
 
