@@ -194,7 +194,7 @@ jsClearRowsResult js_clear_rows_result(const jsBoard *board)
 	return result;
 }
 
-/// Moves the blocks at row 'offset' amount in y dimension.
+/// Sets the position of the blocks in row 'offset' amount in y dimension.
 static void __js_move_row(jsRow *row, int offset)
 {
 	int x;
@@ -324,7 +324,7 @@ static float __js_score_rows(int rows, int level) {
 	}
 }
 
-///
+/// Returns the result of the translation.
 jsTranslationResult js_translate_result(const jsShape *shape, const jsBoard *board, jsVec2i vector)
 {
 	if(js_vec2i_equal(vector, (jsVec2i){0, 0}))
@@ -345,7 +345,7 @@ jsTranslationResult js_translate_result(const jsShape *shape, const jsBoard *boa
 	return (jsTranslationResult){jsMoveStatusFailure, vector, shape->offset};
 }
 
-///
+/// Returns the translated shape.
 jsShape js_translate_shape(const jsShape *shape, const jsTranslationResult *result)
 {
 	return (jsShape){shape->blocks, shape->index, result->new_position};
@@ -383,6 +383,7 @@ static int __js_rotate_shape_index(int index, jsRotation direction)
 	return new_index;
 }
 
+/// Returns the result of the translation.
 jsRotationResult js_rotate_result(const jsShape *shape, const jsBoard *board, jsRotation direction)
 {
 	int new_index, index = shape->index;
@@ -406,6 +407,7 @@ jsRotationResult js_rotate_result(const jsShape *shape, const jsBoard *board, js
 	return (jsRotationResult){jsMoveStatusSuccess, index, new_index};
 }
 
+/// Returns the rotated shape
 jsShape js_rotate_shape(const jsShape *shape, const jsRotationResult *result)
 {
 	return (jsShape){

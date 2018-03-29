@@ -11,61 +11,53 @@ import simd
 import MetalKit
 
 
-class RedView: NSView {
-  
-  override func draw(_ dirtyRect: NSRect) {
-    NSColor.red.setFill()
-    NSBezierPath(rect: dirtyRect).fill()
-  }
-  
-}
-
-
 class GridView: MTKView {
   
   var mouseDownHandler: ((NSEvent) -> Void)?
-  
-  override func mouseDown(with event: NSEvent) {
-    super.mouseDown(with: event)
-    
-    mouseDownHandler?(event)
-  }
+  var keyDownHandler: ((NSEvent) -> Void)?
   
   override var clearColor: MTLClearColor {
     get { return MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0) }
     set { }
   }
   
+  override func mouseDown(with event: NSEvent) { mouseDownHandler?(event) }
+  
+  override func keyDown(with event: NSEvent) { keyDownHandler?(event) }
+  
+  override var acceptsFirstResponder: Bool { return true }
+  
 }
 
 
-class ViewController: NSViewController {
+class ViewController: NSViewController, MTKViewDelegate {
   
-  class GridViewDelegate: NSObject, MTKViewDelegate {
+  private struct Drawer {
     
     typealias FillEncoder = GridRenderEncoder<TriangleFillGridDescriptor>
     typealias BorderEncoder = GridRenderEncoder<LineBorderGridDescriptor>
     
-    var renderContext: RenderContext?
+    private let renderContext: RenderContext
+    private let fillEncoder: FillEncoder
+    private let borderEncoder: BorderEncoder
     
-    var fillEncoder: FillEncoder?
-    var borderEncoder: BorderEncoder?
-    var blocks: BlockCollection?
-    
-    init(fill: FillEncoder?, border: BorderEncoder?) {
+    init?(context: RenderContext?, width: Int, height: Int) {
+      guard let context = context else { return nil }
+      
+      guard let fill = FillEncoder(renderContext: context, gridDescriptor: TriangleFillGridDescriptor(width: width, height: height)) else { return nil }
+      guard let border = BorderEncoder(renderContext: context, gridDescriptor: LineBorderGridDescriptor(width: width, height: height)) else { return nil }
+      
+      renderContext = context
       fillEncoder = fill
       borderEncoder = border
     }
     
-    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) { }
-    
-    func draw(in view: MTKView) {
+    func encode(view: MTKView, _ body: (MTLRenderCommandEncoder, FillEncoder, BorderEncoder) -> Void) {
       // A view with a frame area of 0 will have a currentRenderPassDescriptor
       // that causes SIGABRT. Checking for it will prevent it without disrupting
       // the appearance of the drawing.
       guard (view.frame.width > 0 && view.frame.height > 0) else { return }
       
-      guard let renderContext = renderContext else { return }
       guard let renderPassDescriptor = view.currentRenderPassDescriptor else { return }
       guard let commandBuffer = renderContext.commandQueue.makeCommandBuffer() else { return }
       
@@ -73,9 +65,7 @@ class ViewController: NSViewController {
       
       renderEncoder.setRenderPipelineState(renderContext.pipelineState)
       
-      guard let blocks = blocks else { return }
-      fillEncoder?.encodeRenderCommands(for: blocks, with: renderEncoder)
-      borderEncoder?.encodeRenderCommands(for: blocks, with: renderEncoder)      
+      body(renderEncoder, fillEncoder, borderEncoder)
       
       renderEncoder.endEncoding()
       
@@ -87,53 +77,80 @@ class ViewController: NSViewController {
     
   }
   
-  @IBOutlet var shapeView: GridView!
   @IBOutlet var boardView: GridView!
+  @IBOutlet var nextShapeView: GridView!
+
+  private var boardDrawer: Drawer?
+  private var nextShapeDrawer: Drawer?
   
-  var shapeViewDelegate: GridViewDelegate!
-  var boardViewDelegate: GridViewDelegate!
-  
-  var shape: Shape? {
-    didSet {
-      guard let shape = shape else { return }
-      
-      (shapeView.delegate as? GridViewDelegate)?.blocks = shape.blocks
-      
-      shapeView.needsDisplay = true
-    }
-  }
+  let gameCordinator = GameCordinator()
   
   @IBAction func breakPoint(_ sender: Any?) { }
   
-  static func makeShape() -> Shape { return Shape(js_rand_shape()) }
-  
-  func changeShape() { shape = ViewController.makeShape() }
-  
   override func viewDidLoad() {
-    guard let shapeRenderContext = RenderContext(with: shapeView) else { return }
+    super.viewDidLoad()
     
-    shapeViewDelegate = GridViewDelegate(fill: GridRenderEncoder(renderContext: shapeRenderContext,
-                                                                 gridDescriptor: TriangleFillGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount)),
-                                          border: GridRenderEncoder(renderContext: shapeRenderContext,
-                                                                    gridDescriptor: LineBorderGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount)))
-    shapeViewDelegate.renderContext = shapeRenderContext
+    if let context = RenderContext(with: boardView) {
+      boardDrawer = Drawer(context: context, width: 10, height: 20)
+    }
     
-    shapeView.mouseDownHandler = { _ in self.changeShape() }
-    shapeView.delegate = shapeViewDelegate
+    if let context = RenderContext(with: nextShapeView) {
+      nextShapeDrawer = Drawer(context: context, width: 4, height: 4)
+    }
     
-    changeShape()
+    nextShapeView.delegate = self
+    nextShapeView.mouseDownHandler = { _ in self.gameCordinator.popShape() }
     
-    guard let boardRenderContext = RenderContext(with: boardView) else { return }
+    boardView.delegate = self
     
-    boardViewDelegate = GridViewDelegate(fill: GridRenderEncoder(renderContext: boardRenderContext,
-                                                                 gridDescriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount)),
-                                         border: GridRenderEncoder(renderContext: boardRenderContext,
-                                                                   gridDescriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount)))
-    boardViewDelegate.renderContext = boardRenderContext
-    boardViewDelegate.blocks = Board.randomBoard.blocks
-    
-    boardView.delegate = boardViewDelegate
-    boardView.mouseDownHandler = { _ in self.boardViewDelegate.blocks = Board.randomBoard.blocks }
+    boardView.keyDownHandler = { (event) in
+      print(event)
+      
+      switch event.keyCode {
+      case 125:
+        self.gameCordinator.translateShapeDown({ (result) in
+          print(result.status)
+          self.boardView.needsDisplay = true
+        })
+      case 123:
+        self.gameCordinator.translateShapeLeft({ (result) in
+          print(result.status)
+          self.boardView.needsDisplay = true
+        })
+      case 124:
+        self.gameCordinator.translateShapeRight({ (result) in
+          print(result.status)
+          self.boardView.needsDisplay = true
+        })
+      case 126:
+        self.gameCordinator.rotateShapeClockwise({ (result) in
+          print(result.status)
+          self.boardView.needsDisplay = true
+        })
+      default:
+        break
+      }
+    }
+  }
+  
+  func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) { }
+  
+  func draw(in view: MTKView) {
+    if view == boardView {
+      boardDrawer?.encode(view: boardView) { (encoder, fill, border) in
+        fill.encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
+        border.encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
+        
+        fill.encodeRenderCommands(for: BlockArray(gameCordinator.shape.offsetedBlocks), with: encoder)
+        border.encodeRenderCommands(for: BlockArray(gameCordinator.shape.offsetedBlocks), with: encoder)
+      }
+      
+    } else if view == nextShapeView {
+      nextShapeDrawer?.encode(view: nextShapeView) { (encoder, fill, border) in
+        fill.encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
+        border.encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
+      }
+    }
   }
   
 }

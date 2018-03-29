@@ -3,25 +3,6 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "ViewController.breakPoint(_:):ViewController.swift">
-         <PersistentStrings>
-            <PersistentString
-               value = "shapeView.currentRenderPassDescriptor">
-            </PersistentString>
-            <PersistentString
-               value = "sender as? NSButton">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
-         contextName = "ShapeView.init(coder:):ViewController.swift">
-         <PersistentStrings>
-            <PersistentString
-               value = "delegate">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
          contextName = "GridRenderer.draw(in:):GridRenderer.swift">
          <PersistentStrings>
             <PersistentString
@@ -29,6 +10,17 @@
             </PersistentString>
             <PersistentString
                value = "view.frame">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #2 in TriangleFillGridDescriptor.verticies(for:):GridDescriptor.swift">
+      </ContextState>
+      <ContextState
+         contextName = "ShapeView.init(coder:):ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "delegate">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -41,7 +33,34 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "closure #2 in TriangleFillGridDescriptor.verticies(for:):GridDescriptor.swift">
+         contextName = "ViewController.GridViewDelegate.draw(in:):ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "view.frame">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ViewController.breakPoint(_:):ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "shapeView.currentRenderPassDescriptor">
+            </PersistentString>
+            <PersistentString
+               value = "sender as? NSButton">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ViewController.viewDidLoad():ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "GridViewDelegate(context: RenderContext(with: nextShapeView), width: 4, height: 4)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ViewController.GridViewDelegate.init(context:width:height:):ViewController.swift">
       </ContextState>
    </ContextStates>
 </VariablesViewState>

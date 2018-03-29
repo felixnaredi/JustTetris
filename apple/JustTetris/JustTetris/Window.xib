@@ -31,7 +31,7 @@
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <action selector="breakPoint:" target="8z0-cz-Cb3" id="MQI-Xe-0Gu"/>
+                            <action selector="breakPoint:" target="8z0-cz-Cb3" id="TWh-s8-rB2"/>
                         </connections>
                     </button>
                 </subviews>
@@ -49,12 +49,15 @@
                     <constraint firstAttribute="bottom" secondItem="6Qe-8b-zIh" secondAttribute="bottom" constant="20" symbolic="YES" id="x28-2Y-kNh"/>
                 </constraints>
             </view>
+            <connections>
+                <outlet property="initialFirstResponder" destination="S3j-WO-UnU" id="cRw-UE-hb3"/>
+            </connections>
             <point key="canvasLocation" x="-14" y="302.5"/>
         </window>
         <viewController id="8z0-cz-Cb3" customClass="ViewController" customModule="JustTetris" customModuleProvider="target">
             <connections>
-                <outlet property="boardView" destination="S3j-WO-UnU" id="mGT-Lv-73q"/>
-                <outlet property="shapeView" destination="Oas-eg-vlD" id="bmH-PS-uqK"/>
+                <outlet property="boardView" destination="S3j-WO-UnU" id="y2y-0s-wEQ"/>
+                <outlet property="nextShapeView" destination="Oas-eg-vlD" id="bB7-wx-PfL"/>
                 <outlet property="view" destination="EiT-Mj-1SZ" id="eto-Ij-DQj"/>
             </connections>
         </viewController>

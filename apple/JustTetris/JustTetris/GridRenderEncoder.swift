@@ -62,8 +62,6 @@ struct RenderContext {
 
 class GridRenderEncoder<GridDescriptorType: GridDescriptor> {
   
-  typealias GridDescriptor = GridDescriptorType
-  
   struct BufferIndex {
     
     static var matrix: Int { return Int(JS_BUFFER_INDEX_MATRIX) }
@@ -71,7 +69,7 @@ class GridRenderEncoder<GridDescriptorType: GridDescriptor> {
     
   }
   
-  let gridDescriptor: GridDescriptor
+  let gridDescriptor: GridDescriptorType
   
   let vertexBuffer: MTLBuffer
   let indexBuffer: MTLBuffer
@@ -86,13 +84,13 @@ class GridRenderEncoder<GridDescriptorType: GridDescriptor> {
   }
   
   private static func makeMatrixBuffer(with device: MTLDevice, matrix: Matrix) -> MTLBuffer? {
-    let buffer = device.makeBuffer(length: MemoryLayout<Matrix>.size, options: .storageModeShared)
+    let buffer = device.makeBuffer(length: MemoryLayout<Matrix>.size, options: .cpuCacheModeWriteCombined)
     buffer?.contents().storeBytes(of: matrix, as: Matrix.self)
     
     return buffer
   }
   
-  private static func makeBuffers(with device: MTLDevice, descriptor: GridDescriptor) -> BufferTuple? {
+  private static func makeBuffers(with device: MTLDevice, descriptor: GridDescriptorType) -> BufferTuple? {
     guard let matrixBuffer = self.makeMatrixBuffer(with: device, matrix: descriptor.matrix) else { return nil }
     guard let indexBuffer = self.makeIndexBuffer(with: device, indicies: descriptor.indicies) else { return nil }
     guard let vertexBuffer = device.makeBuffer(length: MemoryLayout<Vertex>.stride * descriptor.area * 4, options: .cpuCacheModeWriteCombined) else { return nil }
@@ -100,7 +98,7 @@ class GridRenderEncoder<GridDescriptorType: GridDescriptor> {
     return (matrixBuffer, indexBuffer, vertexBuffer)
   }
   
-  init?(renderContext: RenderContext, gridDescriptor: GridDescriptor) {
+  init?(renderContext: RenderContext, gridDescriptor: GridDescriptorType) {
     self.gridDescriptor = gridDescriptor
     
     guard let buffers = GridRenderEncoder.makeBuffers(with: renderContext.device, descriptor: gridDescriptor) else { return nil }
@@ -110,13 +108,11 @@ class GridRenderEncoder<GridDescriptorType: GridDescriptor> {
     matrixBuffer = buffers.matrixBuffer
   }
   
-  func loadVertexBuffer(with blocks: GridDescriptor.BlockCollection) {
+  func loadVertexBuffer<Collection: BlockCollection>(with blocks: Collection) {
     gridDescriptor.loadVertexBuffer(vertexBuffer, with: blocks)
   }
   
-  
-  func encodeRenderCommands(for blocks: GridDescriptor.BlockCollection, with encoder: MTLRenderCommandEncoder)  {
-    
+  func encodeRenderCommands<Collection: BlockCollection>(for blocks: Collection, with encoder: MTLRenderCommandEncoder)  {
     loadVertexBuffer(with: blocks)
     
     encoder.setVertexBuffer(vertexBuffer, offset: 0, index: BufferIndex.verticies)
@@ -124,7 +120,7 @@ class GridRenderEncoder<GridDescriptorType: GridDescriptor> {
     
     encoder.drawIndexedPrimitives(type: gridDescriptor.primitiveType,
                                   indexCount: gridDescriptor.indicies.count,
-                                  indexType: GridDescriptorType.IndiciesLayout.metalIndexType,
+                                  indexType: gridDescriptor.metalIndexType,
                                   indexBuffer: indexBuffer,
                                   indexBufferOffset: 0)
   }

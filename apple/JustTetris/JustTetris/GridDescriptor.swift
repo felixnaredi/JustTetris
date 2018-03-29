@@ -52,8 +52,6 @@ extension RectangleCornerLayout {
 /// positions in the grid.
 protocol GridDescriptor {
   
-  associatedtype BlockCollection: Collection where BlockCollection.Element == Block
-  associatedtype VertexCollection: Collection where VertexCollection.Element == Vertex
   associatedtype IndiciesLayout: RectangleCornerLayout
   
   typealias Matrix = float4x4
@@ -63,7 +61,7 @@ protocol GridDescriptor {
   
   var primitiveType: MTLPrimitiveType { get }
   
-  func verticies(for blocks: BlockCollection) -> VertexCollection
+  func verticies<Collection: BlockCollection>(for blocks: Collection) -> AnySequence<Vertex>
   
 }
 
@@ -120,6 +118,8 @@ fileprivate extension GridDescriptor {
 
 extension GridDescriptor {
   
+  var metalIndexType: MTLIndexType { return IndiciesLayout.metalIndexType }
+  
   var area: Int { return width * height }
   
   var indicies: [IndiciesLayout.Index] {
@@ -128,7 +128,7 @@ extension GridDescriptor {
   
   var matrix: Matrix { return Self.matrix(width: width, height: height) }
   
-  func loadVertexBuffer(_ buffer: MTLBuffer, with blocks: BlockCollection) {
+  func loadVertexBuffer<Collection: BlockCollection>(_ buffer: MTLBuffer, with blocks: Collection) {
     let pointerBuffer = Array(verticies(for: blocks)).withUnsafeBytes({ return $0 })
     guard let baseAddress = pointerBuffer.baseAddress else { return }
     
@@ -138,6 +138,7 @@ extension GridDescriptor {
 }
 
 
+/// Placeholder color structure with presets.
 fileprivate enum Color {
   
   case white
@@ -168,10 +169,8 @@ fileprivate enum Color {
 }
 
 
-/// Describes graphical data required to fill an entire grid item rectangle.
+/// Graphical data required to fill an entire grid item rectangle.
 struct TriangleFillGridDescriptor: GridDescriptor {
-  
-  typealias VertexCollection = FlattenBidirectionalCollection<[[Vertex]]>
   
   struct IndiciesLayout: RectangleCornerLayout {
     
@@ -189,6 +188,7 @@ struct TriangleFillGridDescriptor: GridDescriptor {
   
   var primitiveType: MTLPrimitiveType { return MTLPrimitiveType.triangle }
   
+  /// Fixed fill color for formations.
   private static func color(for formation: Formation) -> Color {
     switch formation {
     case .Oh: return .red
@@ -201,9 +201,9 @@ struct TriangleFillGridDescriptor: GridDescriptor {
     }
   }
   
-  func verticies(for blocks: BlockCollection) -> VertexCollection {
-    return blocks.filter({ (block) -> Bool in return !block.isEmpty })
-      .map({ (block) -> [Vertex] in
+  func verticies<Collection: BlockCollection>(for blocks: Collection) -> AnySequence<Vertex> {
+    return AnySequence(blocks.filter({ (block) -> Bool in return !block.isEmpty })
+      .map { (block) -> [Vertex] in
         
         let color = TriangleFillGridDescriptor.color(for: block.formation!)
         let (bl, br, tl, tr) = block.position.corners
@@ -212,16 +212,14 @@ struct TriangleFillGridDescriptor: GridDescriptor {
                 Vertex(position: float2(Float(br.x), Float(br.y)), color: color.shadow),
                 Vertex(position: float2(Float(tl.x), Float(tl.y)), color: color.value),
                 Vertex(position: float2(Float(tr.x), Float(tr.y)), color: color.value)]
-      }).joined()
+      }.joined())
   }
   
 }
 
 
-/// Describes graphical data needed to draw a white line border around a single grid item rectanlge.
+/// Graphical data needed to draw a white line border around a single grid item rectanlge.
 struct LineBorderGridDescriptor: GridDescriptor {
-  
-  typealias VertexCollection = FlattenBidirectionalCollection<[[Vertex]]>
   
   struct IndiciesLayout: RectangleCornerLayout {
     
@@ -239,10 +237,10 @@ struct LineBorderGridDescriptor: GridDescriptor {
   
   var primitiveType: MTLPrimitiveType { return MTLPrimitiveType.line }
   
-  func verticies(for blocks: BlockCollection) -> VertexCollection {
+  func verticies<Collection: BlockCollection>(for blocks: Collection) -> AnySequence<Vertex> {
     let color = Color.white.value
     
-    return blocks.filter { block in return !block.isEmpty }
+    return AnySequence(blocks.filter { block in return !block.isEmpty }
       .map { (block) -> [Vertex] in
         let (bl, br, tl, tr) = block.position.corners
         
@@ -250,7 +248,7 @@ struct LineBorderGridDescriptor: GridDescriptor {
                 Vertex(position: float2(Float(br.x), Float(br.y)), color: color),
                 Vertex(position: float2(Float(tl.x), Float(tl.y)), color: color),
                 Vertex(position: float2(Float(tr.x), Float(tr.y)), color: color)]
-      }.joined()
+      }.joined())
   }
   
 }

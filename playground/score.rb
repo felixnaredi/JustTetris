@@ -4,7 +4,6 @@
 # Created: 2018-03-13 17:29:37
 # Author: Felix Nared
 #
-
 # Find a neat and fair score generating algorithm.
 # -------------------------------------------------------------
 
