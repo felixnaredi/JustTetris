@@ -38,21 +38,17 @@ class ViewController: NSViewController, MTKViewDelegate {
     typealias BorderEncoder = GridRenderEncoder<LineBorderGridDescriptor>
     
     private let renderContext: RenderContext
-    private let fillEncoder: FillEncoder
-    private let borderEncoder: BorderEncoder
     
-    init?(context: RenderContext?, width: Int, height: Int) {
-      guard let context = context else { return nil }
-      
-      guard let fill = FillEncoder(renderContext: context, gridDescriptor: TriangleFillGridDescriptor(width: width, height: height)) else { return nil }
-      guard let border = BorderEncoder(renderContext: context, gridDescriptor: LineBorderGridDescriptor(width: width, height: height)) else { return nil }
-      
-      renderContext = context
-      fillEncoder = fill
-      borderEncoder = border
+    func gridEncoder<Descriptor: GridDescriptor>(descriptor: Descriptor) -> GridRenderEncoder<Descriptor>? {
+      return GridRenderEncoder<Descriptor>(renderContext: renderContext, gridDescriptor: descriptor)
     }
     
-    func encode(view: MTKView, _ body: (MTLRenderCommandEncoder, FillEncoder, BorderEncoder) -> Void) {
+    init?(context: RenderContext?) {
+      guard let context = context else { return nil }
+      renderContext = context
+    }
+    
+    func encode(view: MTKView, _ body: (MTLRenderCommandEncoder) -> Void) {
       // A view with a frame area of 0 will have a currentRenderPassDescriptor
       // that causes SIGABRT. Checking for it will prevent it without disrupting
       // the appearance of the drawing.
@@ -65,7 +61,7 @@ class ViewController: NSViewController, MTKViewDelegate {
       
       renderEncoder.setRenderPipelineState(renderContext.pipelineState)
       
-      body(renderEncoder, fillEncoder, borderEncoder)
+      body(renderEncoder)
       
       renderEncoder.endEncoding()
       
@@ -91,11 +87,11 @@ class ViewController: NSViewController, MTKViewDelegate {
     super.viewDidLoad()
     
     if let context = RenderContext(with: boardView) {
-      boardDrawer = Drawer(context: context, width: 10, height: 20)
+      boardDrawer = Drawer(context: context)
     }
     
     if let context = RenderContext(with: nextShapeView) {
-      nextShapeDrawer = Drawer(context: context, width: 4, height: 4)
+      nextShapeDrawer = Drawer(context: context)
     }
     
     nextShapeView.delegate = self
@@ -137,18 +133,27 @@ class ViewController: NSViewController, MTKViewDelegate {
   
   func draw(in view: MTKView) {
     if view == boardView {
-      boardDrawer?.encode(view: boardView) { (encoder, fill, border) in
-        fill.encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
-        border.encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
+      boardDrawer?.encode(view: boardView) { (encoder) in
+        boardDrawer?.gridEncoder(descriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
+          .encodeRenderCommands(for: BlockArray(gameCordinator.shape.offsetedBlocks), with: encoder)
         
-        fill.encodeRenderCommands(for: BlockArray(gameCordinator.shape.offsetedBlocks), with: encoder)
-        border.encodeRenderCommands(for: BlockArray(gameCordinator.shape.offsetedBlocks), with: encoder)
+        boardDrawer?.gridEncoder(descriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
+          .encodeRenderCommands(for: BlockArray(gameCordinator.shape.offsetedBlocks), with: encoder)
+        
+        boardDrawer?.gridEncoder(descriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
+          .encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
+        
+        boardDrawer?.gridEncoder(descriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
+          .encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
       }
       
     } else if view == nextShapeView {
-      nextShapeDrawer?.encode(view: nextShapeView) { (encoder, fill, border) in
-        fill.encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
-        border.encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
+      nextShapeDrawer?.encode(view: nextShapeView) { (encoder) in
+        boardDrawer?.gridEncoder(descriptor: TriangleFillGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
+          .encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
+        
+        boardDrawer?.gridEncoder(descriptor: LineBorderGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
+          .encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
       }
     }
   }
