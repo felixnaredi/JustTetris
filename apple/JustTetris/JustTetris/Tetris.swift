@@ -7,51 +7,51 @@
 //
 // 1
 // 1
-// 2Fibonacci
-// 6
-// 30
+// 2
+// 6 Fibonacci
+// 1e
 // 1
 // 1
 // 2
 // 6
-// 30 Fibonacci
-// 240
-// 3120
-// 65520
+// 1e
+// f0  Fibonacci
+// c30
+// fff0
 // 1
 // 1
 // 2
 // 6
-// 30
-// 240
-// 3120
-// 65520   Fibonacci
-// 2227680
-// 122522400
-// 10904493600
-// 1570247078400
-// 365867569267200
+// 1e
+// f0
+// c30
+// fff0
+// 21fde0    Fibonacci
+// 74d8b20
+// 289f55e20
+// 16d9a04f200
+// 14cc12e804200
 // 1
 // 1
 // 2
 // 6
-// 30
-// 240
-// 3120
-// 65520
-// 2227680
-// 122522400
-// 10904493600
-// 1570247078400
-// 365867569267200         Fibonacci
-// 137932073613734400
-// 84138564904377984000
-// 83044763560621070208000
-// 132622487406311849122176000
-// 342696507457909818131702784000
-// 1432814097681520949608649339904000
-// 9692987370815489224102512784450560000
-// 106099439760946345047026104938595829760000
+// 1e
+// f0
+// c30
+// fff0
+// 21fde0
+// 74d8b20
+// 289f55e20
+// 16d9a04f200
+// 14cc12e804200
+// 1ea087d7ae13200             Fibonacci
+// 48fa83afecc992400
+// 1195dd9b745ed26dcc00
+// 6db3e772c4f386b6f19c00
+// 4534fe82e73fa17c696bea000
+// 46a4a80afeac23864e5bf74b2000
+// 74acd2caa8beae6c424b445ec3ca000
+// 137cc58cfd43291df0ea96415bef8314000
 
 
 import Foundation
@@ -347,6 +347,11 @@ class GameCordinator {
     js_merge(&rawBoard, &rawShape)
   }
   
+  func resetGame(_ handler: () -> Void) {
+    rawBoard = js_empty_board()
+    handler()
+  }
+  
   struct TranslationResult {
     
     private let result: jsTranslationResult
@@ -359,28 +364,34 @@ class GameCordinator {
     
   }
   
-  private func translateShape(vector: jsVec2i, handler: (TranslationResult) -> Void) -> jsShape {
+  private func translateShape<Result>(vector: jsVec2i, handler: (TranslationResult) -> Result) -> (shape: jsShape, result: Result) {
     var result = js_translate_result(&rawShape, &rawBoard, vector)
-    handler(TranslationResult(result))
+    let handlerResult = handler(TranslationResult(result))
     
-    guard TranslationResult(result).status == .merge else { return js_translate_shape(&rawShape, &result) }
+    guard TranslationResult(result).status == .merge else { return (js_translate_shape(&rawShape, &result), handlerResult) }
     
     mergeShape()
     popShape()
     
-    return rawShape
+    return (rawShape, handlerResult)
   }
   
-  func translateShapeDown(_ handler: (TranslationResult) -> Void) {
-    rawShape = translateShape(vector: jsVec2i(x: 0, y: -1), handler: handler)
+  func translateShapeDown<Result>(_ handler: (TranslationResult) -> Result) -> Result {
+    let (shape, result) = translateShape(vector: jsVec2i(x: 0, y: -1), handler: handler)
+    rawShape = shape
+    return result
   }
   
-  func translateShapeLeft(_ handler: (TranslationResult) -> Void) {
-    rawShape = translateShape(vector: jsVec2i(x: -1, y: 0), handler: handler)
+  func translateShapeLeft<Result>(_ handler: (TranslationResult) -> Result) -> Result {
+    let (shape, result) = translateShape(vector: jsVec2i(x: -1, y: 0), handler: handler)
+    rawShape = shape
+    return result
   }
   
-  func translateShapeRight(_ handler: (TranslationResult) -> Void) {
-    rawShape = translateShape(vector: jsVec2i(x: 1, y: 0), handler: handler)
+  func translateShapeRight<Result>(_ handler: (TranslationResult) -> Result) -> Result {
+    let (shape, result) = translateShape(vector: jsVec2i(x: 1, y: 0), handler: handler)
+    rawShape = shape
+    return result
   }
   
   struct RotationResult {
@@ -393,10 +404,12 @@ class GameCordinator {
     
   }
   
-  func rotateShapeClockwise(_ handler: (RotationResult) -> Void) {
+  func rotateShapeClockwise<Result>(_ handler: (RotationResult) -> Result) -> Result {
     var result = js_rotate_result(&rawShape, &rawBoard, jsRotationClockwise)
-    handler(RotationResult(result))
+    let handlerResult = handler(RotationResult(result))
     rawShape = js_rotate_shape(&rawShape, &result)
+    
+    return handlerResult
   }
   
   func rotateShapeCounterClockwise(_ handler: (RotationResult) -> Void) {

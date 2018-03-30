@@ -95,34 +95,58 @@ class ViewController: NSViewController, MTKViewDelegate {
     }
     
     nextShapeView.delegate = self
+    nextShapeView.enableSetNeedsDisplay = true
     nextShapeView.mouseDownHandler = { _ in self.gameCordinator.popShape() }
     
     boardView.delegate = self
+    boardView.enableSetNeedsDisplay = true
     
     boardView.keyDownHandler = { (event) in
       print(event)
       
       switch event.keyCode {
+        
       case 125:
         self.gameCordinator.translateShapeDown({ (result) in
           print(result.status)
+          guard [.merge, .success, .score].contains(result.status) else { return }
           self.boardView.needsDisplay = true
+          self.nextShapeView.needsDisplay = result.status == .merge
         })
+        
       case 123:
         self.gameCordinator.translateShapeLeft({ (result) in
           print(result.status)
+          guard [.success, .score].contains(result.status) else { return }
           self.boardView.needsDisplay = true
         })
+        
       case 124:
         self.gameCordinator.translateShapeRight({ (result) in
           print(result.status)
+          guard [.success, .score].contains(result.status) else { return }
           self.boardView.needsDisplay = true
         })
+        
       case 126:
         self.gameCordinator.rotateShapeClockwise({ (result) in
           print(result.status)
+          guard [.success, .score].contains(result.status) else { return }
           self.boardView.needsDisplay = true
         })
+        
+      case 49:
+        func fall() -> Bool {
+          return self.gameCordinator.translateShapeDown({ (result) -> Bool in
+            return [.success, .score].contains(result.status)
+          })
+        }
+        
+        while fall() == true { }
+        
+        self.boardView.needsDisplay = true
+        self.nextShapeView.needsDisplay = true
+        
       default:
         break
       }
@@ -134,27 +158,40 @@ class ViewController: NSViewController, MTKViewDelegate {
   func draw(in view: MTKView) {
     if view == boardView {
       boardDrawer?.encode(view: boardView) { (encoder) in
-        boardDrawer?.gridEncoder(descriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
+        boardDrawer?
+          .gridEncoder(descriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
           .encodeRenderCommands(for: BlockArray(gameCordinator.shape.offsetedBlocks), with: encoder)
         
-        boardDrawer?.gridEncoder(descriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
+        boardDrawer?
+          .gridEncoder(descriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
           .encodeRenderCommands(for: BlockArray(gameCordinator.shape.offsetedBlocks), with: encoder)
         
-        boardDrawer?.gridEncoder(descriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
+        boardDrawer?
+          .gridEncoder(descriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
           .encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
         
-        boardDrawer?.gridEncoder(descriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
+        boardDrawer?
+          .gridEncoder(descriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
           .encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
       }
       
     } else if view == nextShapeView {
       nextShapeDrawer?.encode(view: nextShapeView) { (encoder) in
-        boardDrawer?.gridEncoder(descriptor: TriangleFillGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
+        nextShapeDrawer?
+          .gridEncoder(descriptor: TriangleFillGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
           .encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
         
-        boardDrawer?.gridEncoder(descriptor: LineBorderGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
+        nextShapeDrawer?
+          .gridEncoder(descriptor: LineBorderGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
           .encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
       }
+    }
+  }
+  
+  @IBAction func resetGame(_ sender: Any?) {
+    gameCordinator.resetGame {
+      boardView.needsDisplay = true
+      nextShapeView.needsDisplay = true
     }
   }
   
