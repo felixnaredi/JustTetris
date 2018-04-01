@@ -229,8 +229,8 @@ bool js_clear_board_rows(jsBoard *board, const jsClearRowsResult *result)
 
 static bool __js_outside_board(jsVec2i pos)
 {
-	return pos.x < 0 || pos.y < 0 || pos.x >= JS_BOARD_COLUMN_AMOUNT ||
-		pos.y >= JS_BOARD_ROW_AMOUNT;
+	return pos.x < 0 || pos.y < 0 ||
+		pos.x >= JS_BOARD_COLUMN_AMOUNT || pos.y >= JS_BOARD_ROW_AMOUNT;
 }
 
 typedef enum {
@@ -295,7 +295,12 @@ int js_merge(jsBoard *board, const jsShape *shape)
 	while(__js_overlapp(board, shape, offset) == jsBlockPositionStatusOverlapp)
 		offset.y += 1;
 
-	return __js_merge(board, shape);
+	return __js_merge(board,
+	                  &(jsShape){
+	                  	shape->blocks,
+	                  	shape->index,
+	                  	js_vec2i_add(offset, shape->offset)
+	                  });
 }
 
 /// Returns the level for the given amount of rows.
@@ -312,32 +317,30 @@ static float __js_level_multiplier(int level)
 
 /// Returns the score clearing the given amount of rows is worth for the current
 /// level.
-static float __js_score_rows(int rows, int level) {
-	float multiplier = __js_level_multiplier(level);
-
-	switch (rows) {
-	case 1: return 1.0 * multiplier;
-	case 2: return 3.0 * multiplier;
-	case 3: return 6.0 * multiplier;
-	case 4: return 10.0 * multiplier;
-	default: return 0;
-	}
+float js_clear_rows_score(const jsClearRowsResult *result)
+{
+  switch (result->count) {
+    case 1: return 1.0;
+    case 2: return 3.0;
+    case 3: return 6.0;
+    case 4: return 10.0;
+    default: return 0;
+  }
 }
 
 /// Returns the result of the translation.
-jsTranslationResult js_translate_result(const jsShape *shape, const jsBoard *board, jsVec2i vector)
+jsTranslationResult
+js_translate_result(const jsShape *shape, const jsBoard *board, jsVec2i vector)
 {
 	if(js_vec2i_equal(vector, (jsVec2i){0, 0}))
 		return (jsTranslationResult){jsMoveStatusMute, vector, shape->offset};
 
-	if(!__js_overlapp(board, shape, vector)) {
-		jsVec2i new_position = js_vec2i_add(shape->offset, vector);
-
-		if(vector.y < 0)
-			return (jsTranslationResult){jsMoveStatusScore, vector, new_position};
-
-		return (jsTranslationResult){jsMoveStatusSuccess, vector, new_position};
-	}
+	if(!__js_overlapp(board, shape, vector))
+		return (jsTranslationResult){
+			     	jsMoveStatusSuccess,
+			     	vector,
+			    	js_vec2i_add(shape->offset, vector)
+			};
 
 	if(vector.y < 0)
 		return (jsTranslationResult){jsMoveStatusMerge, vector, shape->offset};
@@ -345,10 +348,17 @@ jsTranslationResult js_translate_result(const jsShape *shape, const jsBoard *boa
 	return (jsTranslationResult){jsMoveStatusFailure, vector, shape->offset};
 }
 
+float js_translate_score(const jsTranslationResult *result)
+{
+  return (float)(result->offset.y * -1) * (1.0/8.0);
+}
+
 /// Returns the translated shape.
 jsShape js_translate_shape(const jsShape *shape, const jsTranslationResult *result)
 {
-	return (jsShape){shape->blocks, shape->index, result->new_position};
+	if(result->status == jsMoveStatusSuccess)
+		return (jsShape){shape->blocks, shape->index, result->new_position};
+	return *shape;
 }
 
 /// Returns the index range for the formation that the shape at index belongs
@@ -384,7 +394,9 @@ static int __js_rotate_shape_index(int index, jsRotation direction)
 }
 
 /// Returns the result of the translation.
-jsRotationResult js_rotate_result(const jsShape *shape, const jsBoard *board, jsRotation direction)
+jsRotationResult
+js_rotate_result(const jsShape *shape, const jsBoard *board,
+                 jsRotation direction)
 {
 	int new_index, index = shape->index;
 	jsShape new_shape;

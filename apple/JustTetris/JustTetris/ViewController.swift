@@ -75,13 +75,56 @@ class ViewController: NSViewController, MTKViewDelegate {
   
   @IBOutlet var boardView: GridView!
   @IBOutlet var nextShapeView: GridView!
+  @IBOutlet var rowsLabel: NSTextField!
+  @IBOutlet var scoreLabel: NSTextField!
 
   private var boardDrawer: Drawer?
   private var nextShapeDrawer: Drawer?
   
   let gameCordinator = GameCordinator()
+  var timer: Timer?
+  var rowsCleared = 0
+  var score: Float = 0.0
   
   @IBAction func breakPoint(_ sender: Any?) { }
+  
+  @IBAction func emptyBoard(_ sender: Any?) {
+    gameCordinator.emptyBoard()
+    boardView.needsDisplay = true
+  }
+  
+  private func addScore(for result: GameCordinator.TranslationResult) {
+    guard result.status == .success else { return }
+    score += result.score
+    scoreLabel.stringValue = "Score: \(Int(score))"
+  }
+  
+  private func addScore(for result: GameCordinator.ClearRowsResult) {
+    rowsCleared += result.amount
+    rowsLabel.stringValue = "Rows: \(rowsCleared)"
+    score += result.score
+    scoreLabel.stringValue = "Score: \(Int(score))"
+  }
+  
+  private func translateDownHandler(_ result: GameCordinator.TranslationResult) -> (Bool, Bool) {
+    switch(result.status) {
+    case .success:
+      return (true, false)
+      
+    case .merge:
+      self.gameCordinator.mergeShape()
+      let _ = self.gameCordinator.clearRows(
+        boardWillChange: self.addScore,
+        boardDidChange: { _ in }
+      )      
+      self.gameCordinator.popShape()
+      
+      return (true, true)
+      
+    default:
+      return (false, false)
+    }
+  }
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -99,58 +142,79 @@ class ViewController: NSViewController, MTKViewDelegate {
     nextShapeView.mouseDownHandler = { _ in self.gameCordinator.popShape() }
     
     boardView.delegate = self
-    boardView.enableSetNeedsDisplay = true
-    
+    boardView.enableSetNeedsDisplay = true    
     boardView.keyDownHandler = { (event) in
-      print(event)
-      
       switch event.keyCode {
         
       case 125:
-        self.gameCordinator.translateShapeDown({ (result) in
-          print(result.status)
-          guard [.merge, .success, .score].contains(result.status) else { return }
-          self.boardView.needsDisplay = true
-          self.nextShapeView.needsDisplay = result.status == .merge
-        })
+        let (boardViewNeedsDisplay, nextShapeViewNeedsDisplay) = self.gameCordinator.translateShapeDown(
+          shapeWillChange: self.addScore,
+          shapeDidChange: self.translateDownHandler
+          
+        ).shapeDidChange!
+        
+        self.boardView.needsDisplay = boardViewNeedsDisplay
+        self.nextShapeView.needsDisplay = nextShapeViewNeedsDisplay
         
       case 123:
-        self.gameCordinator.translateShapeLeft({ (result) in
-          print(result.status)
-          guard [.success, .score].contains(result.status) else { return }
-          self.boardView.needsDisplay = true
-        })
+        self.boardView.needsDisplay = self.gameCordinator.translateShapeLeft(
+          shapeWillChange: { _ in },
+          shapeDidChange: { (result) -> Bool in return result.status == .success }
+          
+        ).shapeDidChange!
         
       case 124:
-        self.gameCordinator.translateShapeRight({ (result) in
-          print(result.status)
-          guard [.success, .score].contains(result.status) else { return }
-          self.boardView.needsDisplay = true
-        })
+        self.boardView.needsDisplay = self.gameCordinator.translateShapeRight(
+          shapeWillChange: { _ in },
+          shapeDidChange: { (result) -> Bool in return result.status == .success }
+          
+        ).shapeDidChange!
         
       case 126:
-        self.gameCordinator.rotateShapeClockwise({ (result) in
-          print(result.status)
-          guard [.success, .score].contains(result.status) else { return }
-          self.boardView.needsDisplay = true
-        })
+        self.boardView.needsDisplay = self.gameCordinator.rotateShapeClockwise(
+          shapeWillChange: { _ in },
+          shapeDidChange: { (result) -> Bool in return result.status == .success }
+          
+        ).shapeDidChange!
         
       case 49:
-        func fall() -> Bool {
-          return self.gameCordinator.translateShapeDown({ (result) -> Bool in
-            return [.success, .score].contains(result.status)
+        func fall() {
+          let _ = self.gameCordinator.translateShapeDown(
+            shapeWillChange: self.addScore,
+            
+            shapeDidChange: { (result) in
+              guard result.status == .success else { return }
+              let _ = self.translateDownHandler(result)
+              fall()
           })
         }
         
-        while fall() == true { }
+        fall()
         
-        self.boardView.needsDisplay = true
-        self.nextShapeView.needsDisplay = true
+        let (boardViewNeedsDisplay, nextShapeViewNeedsDisplay) = self.gameCordinator.translateShapeDown(
+          shapeWillChange: { _ in },
+          shapeDidChange: self.translateDownHandler
+          
+          ).shapeDidChange!
+        
+        self.boardView.needsDisplay = boardViewNeedsDisplay
+        self.nextShapeView.needsDisplay = nextShapeViewNeedsDisplay
         
       default:
         break
       }
     }
+    
+    timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true, block: { _ in
+      let (boardViewNeedsDisplay, nextShapeViewNeedsDisplay) = self.gameCordinator.translateShapeDown(
+        shapeWillChange: { _ in },
+        shapeDidChange: self.translateDownHandler
+        
+        ).shapeDidChange!
+      
+      self.boardView.needsDisplay = boardViewNeedsDisplay
+      self.nextShapeView.needsDisplay = nextShapeViewNeedsDisplay
+    })
   }
   
   func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) { }
@@ -185,13 +249,6 @@ class ViewController: NSViewController, MTKViewDelegate {
           .gridEncoder(descriptor: LineBorderGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
           .encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
       }
-    }
-  }
-  
-  @IBAction func resetGame(_ sender: Any?) {
-    gameCordinator.resetGame {
-      boardView.needsDisplay = true
-      nextShapeView.needsDisplay = true
     }
   }
   

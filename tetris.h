@@ -120,8 +120,8 @@ typedef enum {
 	jsMoveStatusMute,
 	jsMoveStatusFailure,
 	jsMoveStatusSuccess,
-	jsMoveStatusScore,
 	jsMoveStatusMerge,
+	jsMoveStatusGameOver,
 } jsMoveStatus;
 
 typedef struct
@@ -164,6 +164,7 @@ typedef struct
 jsClearRowsResult js_clear_rows_result(const jsBoard *board);
 
 bool js_clear_board_rows(jsBoard *board, const jsClearRowsResult *result);
+float js_clear_rows_score(const jsClearRowsResult *result);
 
 
 #endif /* TETRIS_H */

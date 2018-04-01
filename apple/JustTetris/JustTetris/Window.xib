@@ -31,20 +31,8 @@
                             <constraint firstAttribute="width" secondItem="Oas-eg-vlD" secondAttribute="height" multiplier="1:1" id="cDX-mz-Iys"/>
                         </constraints>
                     </customView>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ws7-tB-9wC">
-                        <rect key="frame" x="17" y="13" width="75" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="f5a-4l-NKw">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="resetGame:" target="8z0-cz-Cb3" id="fSa-aW-sAw"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nD7-Xf-6E5">
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nD7-Xf-6E5">
                         <rect key="frame" x="266" y="13" width="127" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="{ Break Point }" bezelStyle="rounded" alignment="center" state="on" borderStyle="border" inset="2" id="AwF-RK-Cc3">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -53,13 +41,47 @@
                             <action selector="breakPoint:" target="8z0-cz-Cb3" id="RrX-Y2-mKA"/>
                         </connections>
                     </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ws7-tB-9wC">
+                        <rect key="frame" x="14" y="13" width="118" height="32"/>
+                        <buttonCell key="cell" type="push" title="Empty Board" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="f5a-4l-NKw">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="emptyBoard:" target="8z0-cz-Cb3" id="rAC-Gy-cgB"/>
+                        </connections>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="v5q-gi-GmW">
+                        <rect key="frame" x="278" y="436" width="102" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Rows: 0" id="UJ4-GD-UWb">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gSo-GO-KUw">
+                        <rect key="frame" x="278" y="411" width="102" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Score: 0" id="SUh-lH-RY9">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
                 <constraints>
                     <constraint firstItem="Oas-eg-vlD" firstAttribute="leading" secondItem="S3j-WO-UnU" secondAttribute="trailing" constant="8" id="15b-Ac-2PP"/>
+                    <constraint firstAttribute="trailing" secondItem="nD7-Xf-6E5" secondAttribute="trailing" constant="11" id="6SX-rV-vrW"/>
                     <constraint firstItem="Oas-eg-vlD" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" id="7j6-wg-dr6"/>
+                    <constraint firstItem="gSo-GO-KUw" firstAttribute="top" secondItem="v5q-gi-GmW" secondAttribute="bottom" constant="8" id="BpO-Kf-ZBu"/>
+                    <constraint firstItem="gSo-GO-KUw" firstAttribute="leading" secondItem="S3j-WO-UnU" secondAttribute="trailing" constant="10" id="DEZ-oo-6HR"/>
+                    <constraint firstAttribute="bottom" secondItem="nD7-Xf-6E5" secondAttribute="bottom" constant="20" id="DGH-hB-Uq5"/>
+                    <constraint firstItem="Ws7-tB-9wC" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" id="JV1-tY-VI2"/>
+                    <constraint firstItem="v5q-gi-GmW" firstAttribute="leading" secondItem="S3j-WO-UnU" secondAttribute="trailing" constant="10" id="Ybf-fj-EO7"/>
                     <constraint firstItem="S3j-WO-UnU" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" id="dGK-hi-deG"/>
                     <constraint firstItem="S3j-WO-UnU" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" id="dXD-By-CfG"/>
                     <constraint firstAttribute="trailing" secondItem="Oas-eg-vlD" secondAttribute="trailing" constant="20" id="hy3-7O-qik"/>
+                    <constraint firstItem="v5q-gi-GmW" firstAttribute="top" secondItem="Oas-eg-vlD" secondAttribute="bottom" constant="8" id="oiI-cS-2YV"/>
+                    <constraint firstAttribute="bottom" secondItem="Ws7-tB-9wC" secondAttribute="bottom" constant="20" id="snu-gd-DFp"/>
                     <constraint firstAttribute="bottom" secondItem="S3j-WO-UnU" secondAttribute="bottom" constant="61" id="wmn-0T-m9y"/>
                 </constraints>
             </view>
@@ -72,6 +94,8 @@
             <connections>
                 <outlet property="boardView" destination="S3j-WO-UnU" id="y2y-0s-wEQ"/>
                 <outlet property="nextShapeView" destination="Oas-eg-vlD" id="bB7-wx-PfL"/>
+                <outlet property="rowsLabel" destination="v5q-gi-GmW" id="RlV-17-bQ8"/>
+                <outlet property="scoreLabel" destination="gSo-GO-KUw" id="8wn-VV-1gw"/>
                 <outlet property="view" destination="EiT-Mj-1SZ" id="eto-Ij-DQj"/>
             </connections>
         </viewController>
