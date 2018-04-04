@@ -29,9 +29,9 @@ struct RasterizerData
 
 
 vertex RasterizerData
-vertexShader(uint vertexID [[vertex_id]],
+vertexShader(uint                       vertexID  [[ vertex_id ]],
              constant js_shader_vertex* verticies [[ buffer(JS_BUFFER_INDEX_VERTICIES) ]],
-             constant float4x4& matrix [[ buffer(JS_BUFFER_INDEX_MATRIX) ]])
+             constant float4x4&         matrix    [[ buffer(JS_BUFFER_INDEX_MATRIX) ]])
 {
   const auto v = verticies[vertexID];
   return RasterizerData(float4(v.position, 0, 1) * matrix, v.color);

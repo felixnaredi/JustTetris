@@ -3,18 +3,38 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "GridRenderer.draw(in:):GridRenderer.swift">
+         contextName = "Board.init(board:):Tetris.swift">
          <PersistentStrings>
             <PersistentString
-               value = "view.currentRenderPassDescriptor">
+               value = "board.blocks">
             </PersistentString>
             <PersistentString
-               value = "view.frame">
+               value = "self.blockBuffer.enumerated.filter { !Block($1).isEmpty }">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "closure #2 in TriangleFillGridDescriptor.verticies(for:):GridDescriptor.swift">
+         contextName = "Board.init(pointer:):Tetris.swift">
+      </ContextState>
+      <ContextState
+         contextName = "BlockArray.init(_:):Tetris.swift">
+      </ContextState>
+      <ContextState
+         contextName = "Board.blocks.getter:Tetris.swift">
+      </ContextState>
+      <ContextState
+         contextName = "ViewController.viewDidLoad():ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "GridViewDelegate(context: RenderContext(with: nextShapeView), width: 4, height: 4)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ViewController.GridViewDelegate.init(context:width:height:):ViewController.swift">
+      </ContextState>
+      <ContextState
+         contextName = "closure #1 in ViewController.draw(in:):ViewController.swift">
       </ContextState>
       <ContextState
          contextName = "ShapeView.init(coder:):ViewController.swift">
@@ -25,10 +45,43 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "ViewController.breakPoint(_:):ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "sender as? NSButton">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #2 in TriangleFillGridDescriptor.verticies(for:):GridDescriptor.swift">
+      </ContextState>
+      <ContextState
          contextName = "GridDescriptor.loadVertexBuffer(_:with:):GridDescriptor.swift">
          <PersistentStrings>
             <PersistentString
                value = "verticies(for: blocks)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "GridRenderEncoder.loadVertexBuffer&lt;A&gt;(with:):GridRenderEncoder.swift">
+      </ContextState>
+      <ContextState
+         contextName = "TriangleFillGridDescriptor.verticies&lt;A&gt;(for:):GridDescriptor.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "blocks.filter({ !$0.isEmpty })">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "GridRenderer.draw(in:):GridRenderer.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "view.currentRenderPassDescriptor">
+            </PersistentString>
+            <PersistentString
+               value = "view.frame">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -41,26 +94,32 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "ViewController.breakPoint(_:):ViewController.swift">
+         contextName = "closure #2 in TriangleFillGridDescriptor.verticies&lt;A&gt;(for:):GridDescriptor.swift">
+      </ContextState>
+      <ContextState
+         contextName = "Board.buffer.getter:Tetris.swift">
+      </ContextState>
+      <ContextState
+         contextName = "closure #1 in Board.blocks.getter:Tetris.swift">
          <PersistentStrings>
             <PersistentString
-               value = "shapeView.currentRenderPassDescriptor">
-            </PersistentString>
-            <PersistentString
-               value = "sender as? NSButton">
+               value = "Block(boardPointer.advanced(by: i).withMemoryRebound(to: jsBlock.self, capacity: 1, { $0 }).pointee)">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "ViewController.viewDidLoad():ViewController.swift">
+         contextName = "GridDescriptor.loadVertexBuffer&lt;A&gt;(_:with:):GridDescriptor.swift">
          <PersistentStrings>
             <PersistentString
-               value = "GridViewDelegate(context: RenderContext(with: nextShapeView), width: 4, height: 4)">
+               value = "blocks.enumerated().filter { !$1.isEmpty }">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "ViewController.GridViewDelegate.init(context:width:height:):ViewController.swift">
+         contextName = "GameCordinator.board.getter:GameCordinator.swift">
+      </ContextState>
+      <ContextState
+         contextName = "GridRenderEncoder.encodeRenderCommands(for:with:):GridRenderEncoder.swift">
       </ContextState>
    </ContextStates>
 </VariablesViewState>

@@ -160,47 +160,6 @@ struct Block {
 }
 
 
-protocol BlockCollection: Collection where Self.Element == Block { }
-
-
-struct BlockBuffer: BlockCollection {
-  
-  let buffer: UnsafeBufferPointer<jsBlock>
-  
-  var startIndex: Int { return buffer.startIndex }
-  var endIndex: Int { return buffer.endIndex }
-  
-  subscript(index: Int) -> Block { return Block(buffer[index]) }
-  
-  func index(after i: Int) -> Int { return buffer.index(after: i) }
-  
-  /// A subscript interface for positional indicies.
-  /// ----------------------------------------------------------------
-  subscript(position: Position) -> Block? {
-    return self.filter({ $0.position == position }).first
-  }
-  
-  subscript(x: Int, y: Int) -> Block? { return self[Position(x, y)] }
-  
-}
-
-
-struct BlockArray: BlockCollection {
-  
-  private let array: Array<Block>
-  
-  init(_ other: Array<Block>) { array = other }
-  
-  var startIndex: Int { return array.startIndex }
-  var endIndex: Int { return array.endIndex }
-  
-  subscript(index: Int) -> Block { return array[index] }
-  
-  func index(after i: Int) -> Int { return array.index(after: i) }
-  
-}
-
-
 struct Shape {
   
   static var blockAmount: Int { return Int(JS_SHAPE_BLOCK_AMOUNT) }
@@ -208,30 +167,17 @@ struct Shape {
   static var columnAmount: Int { return Int(JS_SHAPE_COLUMN_AMOUNT) }
   
   let offset: Position
-  let blocks: BlockBuffer
+  let blocks: [Block]
   
   init(_ shape: jsShape) {
     offset = Position(shape.offset.x, shape.offset.y)
-    blocks = BlockBuffer(buffer: UnsafeBufferPointer(start: shape.blocks, count: Shape.blockAmount))
+    blocks = UnsafeBufferPointer(start: shape.blocks, count: Shape.blockAmount).map { Block($0) }
   }
-  
+
   var offsetedBlocks: [Block] {
     return blocks.map { (block) -> Block in return block.offseted(offset) }
   }
   
-}
-
-
-extension Shape: CustomStringConvertible {
-  
-  private struct Descriptor {
-    let offset: Position
-    let blocks: [Block]
-  }
-  
-  var description: String {
-    return "Shape::\(Descriptor(offset: offset, blocks: Array(blocks)))"
-  }
 }
 
 
@@ -241,55 +187,21 @@ struct Board {
   static var rowAmount: Int { return Int(JS_BOARD_ROW_AMOUNT) }
   static var columnAmount: Int { return Int(JS_BOARD_COLUMN_AMOUNT) }
   
-  private let pointer: UnsafeMutablePointer<jsBoard>
+  private let board: jsBoard
   
-  private var blockBuffer: UnsafeMutableBufferPointer<jsBlock> {
-    return pointer.withMemoryRebound(to: jsBlock.self, capacity: 1, { (pointer) -> UnsafeMutableBufferPointer<jsBlock> in
-      
-      return UnsafeMutableBufferPointer(start: pointer, count: Board.blockAmount)
-    })
-  }
+  init(board: jsBoard) { self.board = board }
   
-  init(board: UnsafeMutablePointer<jsBoard>) { self.pointer = board }
-  
-  static var randomBoard: Board {
-    let pointer = UnsafeMutablePointer<jsBoard>.allocate(capacity: MemoryLayout<jsBoard>.size)
-    pointer.initialize(to: js_empty_board())
-    
-    let buffer = UnsafeMutableBufferPointer(start: pointer
-      .withMemoryRebound(to: jsBlock.self, capacity: 1, { return $0 }), count: Board.blockAmount)
-    
-    buffer.enumerated().forEach { (offset, _) in
-      buffer[offset] = js_rand_shape().blocks.pointee
-      buffer[offset].position = jsVec2i(x: Int32(offset % Board.columnAmount), y: Int32(offset / Board.columnAmount))
-    }
-    
-    return Board(board: pointer)
-  }
-  
-  var blocks: BlockBuffer {
-    get {
-      return BlockBuffer(buffer: pointer
-        .withMemoryRebound(to: jsBlock.self, capacity: 1) { (pointer) -> UnsafeBufferPointer<jsBlock> in
-          
-          return UnsafeBufferPointer(start: pointer, count: Board.blockAmount)
+  private func mapBlocks<T>(_ body: (jsBlock) -> T) -> [T] {
+    var mutable = board.blocks
+    // It really grinds my gears that 'UnsafePointer(&mutable)' causes 'Ambiguous use of init'.
+    // That's why I first initializes with 'UnsafeMutablePointer'.
+    return UnsafePointer(UnsafeMutablePointer(&mutable))
+      .withMemoryRebound(to: jsBlock.self, capacity: 200, { (pointer) -> [T] in
+        return UnsafeBufferPointer(start: pointer, count: Board.blockAmount).map(body)
       })
-    } set {
-      newValue.enumerated().forEach { (offset, block) in blockBuffer[offset] = block.raw }
-    }
   }
   
-  var rows: [BlockBuffer] {
-    return (0..<Board.rowAmount).map { (i) -> BlockBuffer in
-      
-      return BlockBuffer(buffer: pointer
-        .withMemoryRebound(to: jsRow.self, capacity: Board.rowAmount) { (pointer) -> UnsafeBufferPointer<jsBlock> in
-          
-          return UnsafeBufferPointer(start: pointer.advanced(by: i).withMemoryRebound(to: jsBlock.self, capacity: 1, { return $0 }),
-                                     count: Board.columnAmount)
-      })
-    }
-  }
+  var blocks: [Block] { return mapBlocks { Block($0) } }
   
 }
 

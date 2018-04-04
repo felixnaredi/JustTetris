@@ -61,7 +61,7 @@ protocol GridDescriptor {
   
   var primitiveType: MTLPrimitiveType { get }
   
-  func verticies<Collection: BlockCollection>(for blocks: Collection) -> AnySequence<Vertex>
+  func verticies(for blocks: [Block]) -> AnySequence<Vertex>
   
 }
 
@@ -128,7 +128,7 @@ extension GridDescriptor {
   
   var matrix: Matrix { return Self.matrix(width: width, height: height) }
   
-  func loadVertexBuffer<Collection: BlockCollection>(_ buffer: MTLBuffer, with blocks: Collection) {
+  func loadVertexBuffer(_ buffer: MTLBuffer, with blocks: [Block]) {
     let pointerBuffer = Array(verticies(for: blocks)).withUnsafeBytes({ return $0 })
     guard let baseAddress = pointerBuffer.baseAddress else { return }
     
@@ -201,7 +201,7 @@ struct TriangleFillGridDescriptor: GridDescriptor {
     }
   }
   
-  func verticies<Collection: BlockCollection>(for blocks: Collection) -> AnySequence<Vertex> {
+  func verticies(for blocks: [Block]) -> AnySequence<Vertex> {
     return AnySequence(blocks.filter({ (block) -> Bool in return !block.isEmpty })
       .map { (block) -> [Vertex] in
         
@@ -237,7 +237,7 @@ struct LineBorderGridDescriptor: GridDescriptor {
   
   var primitiveType: MTLPrimitiveType { return MTLPrimitiveType.line }
   
-  func verticies<Collection: BlockCollection>(for blocks: Collection) -> AnySequence<Vertex> {
+  func verticies(for blocks: [Block]) -> AnySequence<Vertex> {
     let color = Color.white.value
     
     return AnySequence(blocks.filter { block in return !block.isEmpty }

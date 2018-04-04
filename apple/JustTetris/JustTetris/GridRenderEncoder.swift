@@ -26,6 +26,27 @@ struct Vertex {
 
 struct RenderContext {
   
+  struct LibraryFetch {
+    
+    let vertexFunction: String?
+    let fragmentFunction: String?
+    
+    private static func makeFunction(with library: MTLLibrary, name: String?) -> MTLFunction? {
+      guard let name = name else { return nil }
+      return library.makeFunction(name: name)
+    }
+    
+    func fetch(from library: MTLLibrary) ->
+      (
+      vertexFunction: MTLFunction?,
+      fragmentFunction: MTLFunction?
+      ) {
+        return (LibraryFetch.makeFunction(with: library, name: vertexFunction),
+                LibraryFetch.makeFunction(with: library, name: fragmentFunction))
+    }
+    
+  }
+  
   let device: MTLDevice
   let pipelineState: MTLRenderPipelineState
   let commandQueue: MTLCommandQueue
@@ -108,11 +129,11 @@ class GridRenderEncoder<GridDescriptorType: GridDescriptor> {
     matrixBuffer = buffers.matrixBuffer
   }
   
-  func loadVertexBuffer<Collection: BlockCollection>(with blocks: Collection) {
+  func loadVertexBuffer(with blocks: [Block]) {
     gridDescriptor.loadVertexBuffer(vertexBuffer, with: blocks)
   }
   
-  func encodeRenderCommands<Collection: BlockCollection>(for blocks: Collection, with encoder: MTLRenderCommandEncoder)  {
+  func encodeRenderCommands(for blocks: [Block], with encoder: MTLRenderCommandEncoder)  {
     loadVertexBuffer(with: blocks)
     
     encoder.setVertexBuffer(vertexBuffer, offset: 0, index: BufferIndex.verticies)

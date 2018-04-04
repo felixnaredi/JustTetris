@@ -190,16 +190,14 @@ int main(int argc, char const *argv[]) {
 
 		switch(translation_result.status | rotation_result.status) {
 		case jsMoveStatusSuccess:
-		case jsMoveStatusScore:
 			*shape = js_translate_shape(shape, &translation_result);
 			*shape = js_rotate_shape(shape, &rotation_result);
 			break;
 		case jsMoveStatusMerge:
 			js_merge(board, shape);
 			clear_result = js_clear_rows_result(board);
-
 			js_clear_board_rows(board, &clear_result);
-
+			
 			__js_swap_shapes(state);
 			break;
 		default:

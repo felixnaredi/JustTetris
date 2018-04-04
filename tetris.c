@@ -132,7 +132,11 @@ static jsShape __js_make_shape(int index)
 {
 	const __jsShapeData *data = &shape_data[index];
 
-	return (jsShape){data->blocks, index, data->offset};
+	return (jsShape){
+		.blocks = data->blocks,
+		.index = index,
+		.offset = data->offset
+	};
 }
 
 /// Generates a random index of a shape pointing to the first shape of a form.
@@ -297,9 +301,9 @@ int js_merge(jsBoard *board, const jsShape *shape)
 
 	return __js_merge(board,
 	                  &(jsShape){
-	                  	shape->blocks,
-	                  	shape->index,
-	                  	js_vec2i_add(offset, shape->offset)
+	                  	.blocks = shape->blocks,
+	                  	.index = shape->index,
+	                  	.offset = js_vec2i_add(offset, shape->offset)
 	                  });
 }
 
@@ -333,19 +337,32 @@ jsTranslationResult
 js_translate_result(const jsShape *shape, const jsBoard *board, jsVec2i vector)
 {
 	if(js_vec2i_equal(vector, (jsVec2i){0, 0}))
-		return (jsTranslationResult){jsMoveStatusMute, vector, shape->offset};
+		return (jsTranslationResult){
+			.status = jsMoveStatusMute,
+			.offset = vector,
+			.new_position = shape->offset
+		};
 
 	if(!__js_overlapp(board, shape, vector))
 		return (jsTranslationResult){
-			     	jsMoveStatusSuccess,
-			     	vector,
-			    	js_vec2i_add(shape->offset, vector)
-			};
+			.status = jsMoveStatusSuccess,
+		     	.offset = vector,
+		    	.new_position = js_vec2i_add(shape->offset, vector)
+		};
 
-	if(vector.y < 0)
-		return (jsTranslationResult){jsMoveStatusMerge, vector, shape->offset};
+	// Game over accures when a shape overlapps with its original offset.
+	if(js_vec2i_equal(shape->offset, shape_data[shape->index].offset))
+		return (jsTranslationResult){
+			.status = jsMoveStatusGameOver,
+			.offset = vector,
+			.new_position = shape->offset
+		};
 
-	return (jsTranslationResult){jsMoveStatusFailure, vector, shape->offset};
+	return (jsTranslationResult){
+		.status = vector.y < 0 ? jsMoveStatusMerge : jsMoveStatusFailure,
+		.offset = vector,
+		.new_position = shape->offset
+	};
 }
 
 float js_translate_score(const jsTranslationResult *result)
@@ -357,7 +374,11 @@ float js_translate_score(const jsTranslationResult *result)
 jsShape js_translate_shape(const jsShape *shape, const jsTranslationResult *result)
 {
 	if(result->status == jsMoveStatusSuccess)
-		return (jsShape){shape->blocks, shape->index, result->new_position};
+		return (jsShape){
+			.blocks = shape->blocks,
+			.index = shape->index,
+			.offset = result->new_position
+		};
 	return *shape;
 }
 
@@ -395,36 +416,51 @@ static int __js_rotate_shape_index(int index, jsRotation direction)
 
 /// Returns the result of the translation.
 jsRotationResult
-js_rotate_result(const jsShape *shape, const jsBoard *board,
-                 jsRotation direction)
+js_rotate_result(const jsShape *shape, const jsBoard *board, jsRotation direction)
 {
-	int new_index, index = shape->index;
-	jsShape new_shape;
-	__jsBlockPositionStatus position_status;
+	int index = shape->index;
+	int new_index = __js_rotate_shape_index(index, direction);
 
 	if(direction == jsRotationNone)
-		return (jsRotationResult){jsMoveStatusMute, index, index};
+		return (jsRotationResult){
+			.status = jsMoveStatusMute,
+			.old_shape_index = index,
+			.new_shape_index = index
+		};
 
-	new_index = __js_rotate_shape_index(index, direction);
+	switch(__js_overlapp(board,
+	                     &(jsShape){
+	                     	.blocks = __js_blocks_at(new_index),
+	                     	.index = new_index,
+	                     	.offset = shape->offset
+	                     },
+	                     (jsVec2i){0, 0}))
+	{
+	case jsBlockPositionStatusValid:
+		return (jsRotationResult){
+			.status = jsMoveStatusSuccess,
+			.old_shape_index = index,
+			.new_shape_index = new_index
+		};
 
-	new_shape.blocks = __js_blocks_at(new_index);
-	new_shape.index = new_index;
-	new_shape.offset = shape->offset;
-
-	position_status = __js_overlapp(board, &new_shape, (jsVec2i){0, 0});
-
-	if(position_status != jsBlockPositionStatusValid)
-		return (jsRotationResult){jsMoveStatusFailure, index, index};
-
-	return (jsRotationResult){jsMoveStatusSuccess, index, new_index};
+	default:
+		return (jsRotationResult){
+			.status = jsMoveStatusFailure,
+			.old_shape_index = index,
+			.new_shape_index = index
+		};
+	}
 }
 
 /// Returns the rotated shape
 jsShape js_rotate_shape(const jsShape *shape, const jsRotationResult *result)
 {
-	return (jsShape){
-		__js_blocks_at(result->new_shape_index),
-		result->new_shape_index,
-		shape->offset
-	};
+	if(result->status == jsMoveStatusSuccess)
+		return (jsShape){
+			.blocks = __js_blocks_at(result->new_shape_index),
+			.index = result->new_shape_index,
+			.offset = shape->offset
+		};
+
+	return *shape;
 }

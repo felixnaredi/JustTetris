@@ -6,7 +6,6 @@
 log
 *_log
 log_*
-playground/Makefile
-demos/Makefile
+playground
 .DS_Store
 screenshots
