@@ -48,5 +48,10 @@ jsVec2f js_vec2f_add(jsVec2f a, jsVec2f b);
 jsVec3i js_vec3i_add(jsVec3i a, jsVec3i b);
 jsVec3f js_vec3f_add(jsVec3f a, jsVec3f b);
 
+jsVec2i js_vec2i_subtract(jsVec2i lhs, jsVec2i rhs);
+jsVec3i js_vec3i_subtract(jsVec3i lhs, jsVec3i rhs);
+jsVec2f js_vec2f_subtract(jsVec2f lhs, jsVec2f rhs);
+jsVec3f js_vec3f_subtract(jsVec3f lhs, jsVec3f rhs);
+
 
 #endif /* VECTOR_H */

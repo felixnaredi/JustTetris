@@ -11,6 +11,12 @@ Working demo drawn in terminal. Has no timer and does not track score.
 
 #### *Build*
 ```bash
->$ tools/makemake demos ; make -C demos/ game001
+>$ make -C demos/ game001
 ```
 Run file at *demos/game001.o*
+
+### **apple**
+Playable
+
+#### *Build*
+Build with Xcode.

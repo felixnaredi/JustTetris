@@ -160,6 +160,26 @@ struct Block {
 }
 
 
+fileprivate func memoryMap<Pointee, Element>(
+  pointer: UnsafePointer<Pointee>,
+  count: Int,
+  _ body: (Pointee) -> Element
+  ) -> [Element] {
+    return UnsafeBufferPointer(start: pointer, count: count).map(body)
+}
+
+fileprivate func memoryMap<PointeeA, PointeeB, Element>(
+  pointer: UnsafePointer<PointeeA>,
+  rebound: PointeeB.Type,
+  count: Int,
+  _ body: (PointeeB) -> Element
+  ) -> [Element] {
+  return pointer.withMemoryRebound(to: rebound, capacity: count, { (pointer) -> [Element] in
+    memoryMap(pointer: pointer, count: count, body)
+  })
+}
+
+
 struct Shape {
   
   static var blockAmount: Int { return Int(JS_SHAPE_BLOCK_AMOUNT) }
@@ -171,7 +191,7 @@ struct Shape {
   
   init(_ shape: jsShape) {
     offset = Position(shape.offset.x, shape.offset.y)
-    blocks = UnsafeBufferPointer(start: shape.blocks, count: Shape.blockAmount).map { Block($0) }
+    blocks = memoryMap(pointer: shape.blocks, count: Shape.blockAmount) { Block($0) }
   }
 
   var offsetedBlocks: [Block] {
@@ -191,17 +211,13 @@ struct Board {
   
   init(board: jsBoard) { self.board = board }
   
-  private func mapBlocks<T>(_ body: (jsBlock) -> T) -> [T] {
-    var mutable = board.blocks
-    // It really grinds my gears that 'UnsafePointer(&mutable)' causes 'Ambiguous use of init'.
-    // That's why I first initializes with 'UnsafeMutablePointer'.
-    return UnsafePointer(UnsafeMutablePointer(&mutable))
-      .withMemoryRebound(to: jsBlock.self, capacity: 200, { (pointer) -> [T] in
-        return UnsafeBufferPointer(start: pointer, count: Board.blockAmount).map(body)
-      })
+  var blocks: [Block] {
+    var mutable = board
+    return memoryMap(pointer: UnsafePointer(UnsafeMutablePointer(&mutable)),
+                     rebound: jsBlock.self,
+                     count: Board.blockAmount,
+                     { Block($0) })    
   }
-  
-  var blocks: [Block] { return mapBlocks { Block($0) } }
   
 }
 

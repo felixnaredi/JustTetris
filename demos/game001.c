@@ -4,18 +4,22 @@
 // Author: Felix Nared
 //
 // BUILD:
-//	gcc game001.c -o game001.o ../vector.c ../tetris.c ../debug.c -lncurses -DJS_DEBUG
+//	gcc game001.c -o game001.o ../source/vector.c ../source/tetris.c ../source/ruleset.c ../source/debug.c -lncurses -DJS_DEBUG
 
 #include <time.h>
 #include <stdlib.h>
 #include <ncurses.h>
 
-#include "../tetris.h"
-#include "../build.h"
+#include "../source/tetris.h"
+#include "../source/debug.h"
+#include "../source/ruleset.h"
 
 
 static WINDOW *window_board = NULL;
 static WINDOW *window_active_board = NULL;
+static WINDOW *window_score = NULL;
+static WINDOW *window_level = NULL;
+
 
 static void __js_init_ncurses()
 {
@@ -29,7 +33,7 @@ static void __js_init_ncurses()
 	init_pair(1, COLOR_BLACK, COLOR_MAGENTA);
 	init_pair(2, COLOR_BLUE, COLOR_WHITE);
 
-	addstr("Just Tetris - demo_game");
+	addstr("Just Tetris - " __FILE__);
 	refresh();
 }
 
@@ -109,6 +113,18 @@ static void __js_draw_board_window(const jsBoard *board, const jsShape *shape)
 	wrefresh(window_board);
 }
 
+static void __js_init_score_level_windows()
+{
+	window_score = newwin(2, 32, 4, 16);
+}
+
+static void __js_update_score_level(float score, float level)
+{
+	wclear(window_score);
+	wprintw(window_score, "Score: %f\nLevel: %f", score, level);
+	wrefresh(window_score);
+}
+
 
 typedef struct
 {
@@ -133,10 +149,13 @@ static void __js_swap_shapes(__jsBlockState *state)
 	state->current = (current + 1) % 2;
 }
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char const *argv[]) {	
 	__jsBlockState *state;
 	jsBoard *board;
 	int input;
+	float score = 0, level = 0;
+
+	jsRuleset rule = js_standard_ruleset();
 
 #ifdef JS_DEBUG
 
@@ -150,6 +169,7 @@ int main(int argc, char const *argv[]) {
 	srand(time(NULL));
 
 	__js_init_block_state(state);
+	__js_init_score_level_windows();
 
 	board = &state->board;
 
@@ -192,17 +212,24 @@ int main(int argc, char const *argv[]) {
 		case jsMoveStatusSuccess:
 			*shape = js_translate_shape(shape, &translation_result);
 			*shape = js_rotate_shape(shape, &rotation_result);
+
+			score += rule.score_for_translation(translation_result) * rule.level_score_multiplier(level);
 			break;
 		case jsMoveStatusMerge:
 			js_merge(board, shape);
 			clear_result = js_clear_rows_result(board);
 			js_clear_board_rows(board, &clear_result);
-			
+
 			__js_swap_shapes(state);
+
+			level += rule.level_increment_for_clear(level, clear_result);
+			score += rule.score_for_clear(clear_result) * rule.level_score_multiplier(level);
 			break;
 		default:
 			break;
 		}
+
+		__js_update_score_level(score, level);
 
 	} while(input != 'q');
 

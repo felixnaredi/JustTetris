@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "build.h"
+#include "debug.h"
 #include "tetris.h"
 #include "vector.h"
 
@@ -66,11 +66,6 @@ static const __jsIndexRange shape_index_ranges[] = {
 #define JS_SHAPE_INDEX_RANGES_LENGTH \
 	(sizeof(shape_index_ranges) / sizeof(shape_index_ranges[0]))
 
-static int __js_timer(int level)
-{
-	return 120 / level;
-}
-
 /// Returns an empty block.
 static jsBlock __js_empty_block()
 {
@@ -113,12 +108,6 @@ jsBoard js_empty_board()
 	return __js_empty_board();
 }
 
-/// Returns the blocks for the shape at a given index.
-static const jsBlock *__js_blocks_at(int index)
-{
-	return shape_data[index].blocks;
-}
-
 jsShapeFormation js_block_formation(jsBlock block)
 {
   return block.status & JS_BLOCK_FORMATION;
@@ -153,6 +142,29 @@ jsShape js_rand_shape()
 	return __js_make_shape(__js_gen_shape_index());
 }
 
+jsShape js_result_old_shape(jsResult result)
+{
+  return (jsShape){
+    .blocks = shape_data[result.rotation.old_shape_index].blocks,
+    
+    .offset = result.successfull ?
+    js_vec2i_subtract(result.translation.new_position, result.translation.offset) :
+    result.translation.new_position,
+    
+    .index = result.rotation.old_shape_index,
+  };
+}
+
+jsShape js_result_new_shape(jsResult result)
+{
+  return (jsShape){
+    .blocks = shape_data[result.rotation.new_shape_index].blocks,
+    .offset = result.translation.new_position,
+    .index = result.rotation.new_shape_index,
+  };
+}
+
+
 /// Returns true if the block is empty.
 static bool __js_block_is_empty(jsBlock block)
 {
@@ -175,58 +187,6 @@ static bool __js_row_is_full(const jsRow *row)
 		if(__js_block_is_empty(blocks[i]))
 			return false;
 	}
-
-	return true;
-}
-
-jsClearRowsResult js_clear_rows_result(const jsBoard *board)
-{
-	int i, *indicies, count = 0;
-	jsClearRowsResult result;
-
-	indicies = result.indicies;
-
-	for(i = 0; i < JS_BOARD_ROW_AMOUNT; i++) {
-		if(__js_row_is_full(&board->rows[i])) {
-			indicies[count] = i;
-			count++;
-		}
-	}
-
-	result.count = count;
-
-	return result;
-}
-
-/// Sets the position of the blocks in row 'offset' amount in y dimension.
-static void __js_move_row(jsRow *row, int offset)
-{
-	int x;
-
-	for(x = 0; x < JS_BOARD_COLUMN_AMOUNT; x++)
-		row->blocks[x].position.y += offset;
-}
-
-/// Returns true if rows were cleared.
-bool js_clear_board_rows(jsBoard *board, const jsClearRowsResult *result)
-{
-	int i;
-	jsRow *rows = board->rows;
-
-	if(result->count == 0)
-		return false;
-
-	// Reversed iteration of indicies.
-	for(i = result->count - 1; i > -1; i--) {
-		int j;
-
-		for(j = result->indicies[i]; j < JS_BOARD_ROW_AMOUNT - 1; j++) {
-			rows[j] = rows[j + 1];
-			__js_move_row(&rows[j], -1);
-		}
-	}
-
-	rows[JS_BOARD_ROW_AMOUNT - 1] = __js_empty_row();
 
 	return true;
 }
@@ -290,96 +250,152 @@ static int __js_merge(jsBoard *board, const jsShape *shape)
 	return count;
 }
 
-/// Merges shape and board. Moves shape upwards until it doesn't overlapp with
-/// the board.
-int js_merge(jsBoard *board, const jsShape *shape)
+void __js_clear_rows(jsBoard *board, int *indicies, int count)
 {
-	jsVec2i offset = {0, 0};
+	int i;
+	jsRow *rows = board->rows;
 
-	while(__js_overlapp(board, shape, offset) == jsBlockPositionStatusOverlapp)
-		offset.y += 1;
+	if(count == 0)
+		return;
 
-	return __js_merge(board,
-	                  &(jsShape){
-	                  	.blocks = shape->blocks,
-	                  	.index = shape->index,
-	                  	.offset = js_vec2i_add(offset, shape->offset)
-	                  });
+	for(i = count - 1; i > -1; i--) {
+		int j;
+
+		for(j = indicies[i]; j < JS_BOARD_ROW_AMOUNT - 1; j++) {
+			int x;
+
+			rows[j] = rows[j + 1];
+			for(x = 0; x < JS_BOARD_COLUMN_AMOUNT; x++)
+				rows[j].blocks[x].position.y -= 1;
+		}
+	}
+
+	rows[JS_BOARD_ROW_AMOUNT - 1] = __js_empty_row();
 }
 
-/// Returns the level for the given amount of rows.
-static int __js_get_level(int rows)
+typedef struct
 {
-	return rows / 8 + 1;
-}
+	int count;
+	int indicies[JS_ROW_CLEAR_MAX];
+} __jsClearResult;
 
-/// Returns a score multiplier for the given level.
-static float __js_level_multiplier(int level)
+__jsClearResult __js_clear_result(const jsBoard *board)
 {
-	return (float)level / 8.0 + 1.0;
-}
+	int i, count = 0;
+	int indicies[JS_ROW_CLEAR_MAX] = {-1, -1, -1, -1};
 
-/// Returns the score clearing the given amount of rows is worth for the current
-/// level.
-float js_clear_rows_score(const jsClearRowsResult *result)
-{
-  switch (result->count) {
-    case 1: return 1.0;
-    case 2: return 3.0;
-    case 3: return 6.0;
-    case 4: return 10.0;
-    default: return 0;
-  }
-}
+	for(i = 0; i < JS_BOARD_ROW_AMOUNT; i++) {
+		if(__js_row_is_full(&board->rows[i])) {
+			indicies[count] = i;
+			count++;
+		}
+	}
 
-/// Returns the result of the translation.
-jsTranslationResult
-js_translate_result(const jsShape *shape, const jsBoard *board, jsVec2i vector)
-{
-	if(js_vec2i_equal(vector, (jsVec2i){0, 0}))
-		return (jsTranslationResult){
-			.status = jsMoveStatusMute,
-			.offset = vector,
-			.new_position = shape->offset
-		};
-
-	if(!__js_overlapp(board, shape, vector))
-		return (jsTranslationResult){
-			.status = jsMoveStatusSuccess,
-		     	.offset = vector,
-		    	.new_position = js_vec2i_add(shape->offset, vector)
-		};
-
-	// Game over accures when a shape overlapps with its original offset.
-	if(js_vec2i_equal(shape->offset, shape_data[shape->index].offset))
-		return (jsTranslationResult){
-			.status = jsMoveStatusGameOver,
-			.offset = vector,
-			.new_position = shape->offset
-		};
-
-	return (jsTranslationResult){
-		.status = vector.y < 0 ? jsMoveStatusMerge : jsMoveStatusFailure,
-		.offset = vector,
-		.new_position = shape->offset
+	return (__jsClearResult){
+		.count = count,
+		.indicies = {indicies[0], indicies[1], indicies[2], indicies[3]},
 	};
 }
 
-float js_translate_score(const jsTranslationResult *result)
+jsResult __js_translation_result(const jsShape *shape,
+                                 const jsBoard *board,
+                                 jsVec2i offset,
+                                 bool user_action)
 {
-  return (float)(result->offset.y * -1) * (1.0/8.0);
+	if(js_vec2i_equal((jsVec2i){0, 0}, offset))
+		return (jsResult){
+			.mute_action = true,
+			.user_action = user_action,
+			.game_over = false,
+			.successfull = true,
+			.translation = {
+				.offset = offset,
+				.new_position = shape->offset,
+			},
+			.rotation = {
+				.old_shape_index = shape->index,
+				.new_shape_index = shape->index,
+			},
+			.merge = {
+				.should_merge = false,
+				.rows_cleared = 0,
+				.indicies = {-1, -1, -1, -1},
+			},
+		};
+
+	switch (__js_overlapp(board, shape, offset)) {
+	case jsBlockPositionStatusValid:
+		return (jsResult){
+			.mute_action = false,
+			.user_action = user_action,
+			.game_over = false,
+			.successfull = true,
+			.translation = {
+				.offset = offset,
+				.new_position = js_vec2i_add(shape->offset, offset),
+			},
+			.rotation = {
+				.old_shape_index = shape->index,
+				.new_shape_index = shape->index,
+			},
+			.merge = {
+				.should_merge = false,
+				.rows_cleared = 0,
+				.indicies = {-1, -1, -1, -1},
+			},
+		};
+	case jsBlockPositionStatusOutside:
+	case jsBlockPositionStatusOverlapp:
+		return (jsResult){
+			.mute_action = false,
+			.user_action = user_action,
+			.game_over = js_vec2i_equal(
+				shape->offset,
+				shape_data[shape->index].offset
+			),
+			.successfull = false,
+			.translation = {
+				.offset = offset,
+				.new_position = shape->offset,
+			},
+			.rotation = {
+				.old_shape_index = shape->index,
+				.new_shape_index = shape->index,
+			},
+			.merge = {
+				.should_merge = offset.y < 0,
+				.rows_cleared = 0,
+				.indicies = {-1, -1, -1, -1},
+			},
+
+		};
+	}
 }
 
-/// Returns the translated shape.
-jsShape js_translate_shape(const jsShape *shape, const jsTranslationResult *result)
+jsResult js_translate_shape(jsShape *shape, jsBoard *board, jsVec2i offset, bool user_action)
 {
-	if(result->status == jsMoveStatusSuccess)
-		return (jsShape){
-			.blocks = shape->blocks,
-			.index = shape->index,
-			.offset = result->new_position
-		};
-	return *shape;
+  __jsClearResult clear_result;
+	jsResult result = __js_translation_result(shape, board, offset, user_action);
+
+	if(result.successfull) {
+		shape->offset = result.translation.new_position;
+		return result;
+	}
+
+	if(!result.merge.should_merge)
+		return result;
+
+	__js_merge(board, shape);
+  clear_result = __js_clear_result(board);
+	__js_clear_rows(board, clear_result.indicies, clear_result.count);
+  
+  result.merge.rows_cleared = clear_result.count;
+  result.merge.indicies[0] = clear_result.indicies[0];
+  result.merge.indicies[1] = clear_result.indicies[1];
+  result.merge.indicies[2] = clear_result.indicies[2];
+  result.merge.indicies[3] = clear_result.indicies[3];
+
+	return result;
 }
 
 /// Returns the index range for the formation that the shape at index belongs
@@ -400,7 +416,7 @@ static __jsIndexRange __js_index_range_for_shape_index(int index)
 }
 
 /// Returns next index given the rotation.
-static int __js_rotate_shape_index(int index, jsRotation direction)
+static int __js_rotate_shape_index(int index, jsRotate direction)
 {
 	__jsIndexRange range = __js_index_range_for_shape_index(index);
 	int new_index = index + (int) direction;
@@ -414,53 +430,69 @@ static int __js_rotate_shape_index(int index, jsRotation direction)
 	return new_index;
 }
 
-/// Returns the result of the translation.
-jsRotationResult
-js_rotate_result(const jsShape *shape, const jsBoard *board, jsRotation direction)
+static jsResult __js_rotation_result(const jsShape *shape,
+                                     const jsBoard *board,
+                                     jsRotate direction,
+                                     bool user_action)
 {
-	int index = shape->index;
-	int new_index = __js_rotate_shape_index(index, direction);
+	int index = __js_rotate_shape_index(shape->index, direction);
+	jsShape new_shape = {
+		.blocks = shape_data[index].blocks,
+		.index = index,
+		.offset = shape->offset,
+	};
 
-	if(direction == jsRotationNone)
-		return (jsRotationResult){
-			.status = jsMoveStatusMute,
-			.old_shape_index = index,
-			.new_shape_index = index
-		};
-
-	switch(__js_overlapp(board,
-	                     &(jsShape){
-	                     	.blocks = __js_blocks_at(new_index),
-	                     	.index = new_index,
-	                     	.offset = shape->offset
-	                     },
-	                     (jsVec2i){0, 0}))
-	{
+	switch(__js_overlapp(board, &new_shape, (jsVec2i){0, 0})) {
 	case jsBlockPositionStatusValid:
-		return (jsRotationResult){
-			.status = jsMoveStatusSuccess,
-			.old_shape_index = index,
-			.new_shape_index = new_index
+		return (jsResult){
+			.mute_action = false,
+			.user_action = user_action,
+			.game_over = false,
+			.successfull = true,
+			.translation = {
+				.offset = (jsVec2i){0, 0},
+				.new_position = new_shape.offset,
+			},
+			.rotation = {
+				.old_shape_index = shape->index,
+				.new_shape_index = new_shape.index,
+			},
+			.merge = {
+				.should_merge = false,
+				.rows_cleared = 0,
+				.indicies = {-1, -1, -1, -1},
+			},
 		};
-
-	default:
-		return (jsRotationResult){
-			.status = jsMoveStatusFailure,
-			.old_shape_index = index,
-			.new_shape_index = index
+  default:
+		return (jsResult){
+			.mute_action = false,
+			.user_action = user_action,
+			.game_over = false,
+			.successfull = false,
+			.translation = {
+				.offset = (jsVec2i){0, 0},
+				.new_position = shape->offset,
+			},
+			.rotation = {
+				.old_shape_index = shape->index,
+				.new_shape_index = shape->index,
+			},
+			.merge = {
+				.should_merge = false,
+				.rows_cleared = 0,
+				.indicies = {-1, -1, -1, -1},
+			},
 		};
 	}
 }
 
-/// Returns the rotated shape
-jsShape js_rotate_shape(const jsShape *shape, const jsRotationResult *result)
+jsResult js_rotate_shape(jsShape *shape, jsBoard *board, jsRotate direction, bool user_action)
 {
-	if(result->status == jsMoveStatusSuccess)
-		return (jsShape){
-			.blocks = __js_blocks_at(result->new_shape_index),
-			.index = result->new_shape_index,
-			.offset = shape->offset
-		};
+	jsResult result = __js_rotation_result(shape, board, direction, user_action);
 
-	return *shape;
+	shape->index = result.rotation.new_shape_index;
+	shape->blocks = shape_data[result.rotation.new_shape_index].blocks;
+
+	return result;
 }
+

@@ -108,15 +108,15 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "GameCordinator.board.getter:GameCordinator.swift">
+      </ContextState>
+      <ContextState
          contextName = "GridDescriptor.loadVertexBuffer&lt;A&gt;(_:with:):GridDescriptor.swift">
          <PersistentStrings>
             <PersistentString
                value = "blocks.enumerated().filter { !$1.isEmpty }">
             </PersistentString>
          </PersistentStrings>
-      </ContextState>
-      <ContextState
-         contextName = "GameCordinator.board.getter:GameCordinator.swift">
       </ContextState>
       <ContextState
          contextName = "GridRenderEncoder.encodeRenderCommands(for:with:):GridRenderEncoder.swift">

@@ -3,4 +3,5 @@
 //
 
 #include "tetris.h"
+#include "ruleset.h"
 #include "shader_types.h"

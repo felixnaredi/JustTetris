@@ -45,3 +45,24 @@ jsVec3f js_vec3f_add(jsVec3f a, jsVec3f b)
 {
 	return (jsVec3f) {a.x + b.x, a.y + b.y};
 }
+
+jsVec2i js_vec2i_subtract(jsVec2i lhs, jsVec2i rhs)
+{
+  return js_vec2i_add(lhs, (jsVec2i){-rhs.x, -rhs.y});
+}
+
+jsVec3i js_vec3i_subtract(jsVec3i lhs, jsVec3i rhs)
+{
+  return js_vec3i_add(lhs, (jsVec3i){-rhs.x, -rhs.y});
+}
+
+jsVec2f js_vec2f_subtract(jsVec2f lhs, jsVec2f rhs)
+{
+  return js_vec2f_add(lhs, (jsVec2f){-rhs.x, -rhs.y});
+}
+
+jsVec3f js_vec3f_subtract(jsVec3f lhs, jsVec3f rhs)
+{
+  return js_vec3f_add(lhs, (jsVec3f){-rhs.x, -rhs.y});
+}
+

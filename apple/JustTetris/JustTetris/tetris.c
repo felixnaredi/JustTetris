@@ -1,1 +1,1 @@
-../../../tetris.c
+../../../source/tetris.c

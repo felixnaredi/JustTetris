@@ -51,7 +51,7 @@
                             <action selector="newGame:" target="8z0-cz-Cb3" id="7Ep-Cm-bth"/>
                         </connections>
                     </button>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="v5q-gi-GmW">
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="v5q-gi-GmW">
                         <rect key="frame" x="278" y="436" width="102" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Rows: 0" id="UJ4-GD-UWb">
                             <font key="font" metaFont="system"/>
@@ -59,9 +59,17 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gSo-GO-KUw">
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gSo-GO-KUw">
                         <rect key="frame" x="278" y="411" width="102" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Score: 0" id="SUh-lH-RY9">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ldc-Li-XaU">
+                        <rect key="frame" x="276" y="386" width="104" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Level: 0" id="MVd-A6-SAr">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -70,12 +78,17 @@
                 </subviews>
                 <constraints>
                     <constraint firstItem="Oas-eg-vlD" firstAttribute="leading" secondItem="S3j-WO-UnU" secondAttribute="trailing" constant="8" id="15b-Ac-2PP"/>
+                    <constraint firstAttribute="trailing" secondItem="gSo-GO-KUw" secondAttribute="trailing" constant="20" id="5ln-1N-vZS"/>
                     <constraint firstAttribute="trailing" secondItem="nD7-Xf-6E5" secondAttribute="trailing" constant="11" id="6SX-rV-vrW"/>
                     <constraint firstItem="Oas-eg-vlD" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" id="7j6-wg-dr6"/>
                     <constraint firstItem="gSo-GO-KUw" firstAttribute="top" secondItem="v5q-gi-GmW" secondAttribute="bottom" constant="8" id="BpO-Kf-ZBu"/>
                     <constraint firstItem="gSo-GO-KUw" firstAttribute="leading" secondItem="S3j-WO-UnU" secondAttribute="trailing" constant="10" id="DEZ-oo-6HR"/>
                     <constraint firstAttribute="bottom" secondItem="nD7-Xf-6E5" secondAttribute="bottom" constant="20" id="DGH-hB-Uq5"/>
+                    <constraint firstAttribute="trailing" secondItem="v5q-gi-GmW" secondAttribute="trailing" constant="20" id="FWw-72-oSJ"/>
                     <constraint firstItem="Ws7-tB-9wC" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" id="JV1-tY-VI2"/>
+                    <constraint firstItem="Ldc-Li-XaU" firstAttribute="leading" secondItem="S3j-WO-UnU" secondAttribute="trailing" constant="8" id="Qpc-1J-RJW"/>
+                    <constraint firstAttribute="trailing" secondItem="Ldc-Li-XaU" secondAttribute="trailing" constant="20" id="RnZ-3p-Bbq"/>
+                    <constraint firstItem="Ldc-Li-XaU" firstAttribute="top" secondItem="gSo-GO-KUw" secondAttribute="bottom" constant="8" id="ScX-eO-XPT"/>
                     <constraint firstItem="v5q-gi-GmW" firstAttribute="leading" secondItem="S3j-WO-UnU" secondAttribute="trailing" constant="10" id="Ybf-fj-EO7"/>
                     <constraint firstItem="S3j-WO-UnU" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" id="dGK-hi-deG"/>
                     <constraint firstItem="S3j-WO-UnU" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" id="dXD-By-CfG"/>
@@ -93,6 +106,7 @@
         <viewController id="8z0-cz-Cb3" customClass="ViewController" customModule="JustTetris" customModuleProvider="target">
             <connections>
                 <outlet property="boardView" destination="S3j-WO-UnU" id="y2y-0s-wEQ"/>
+                <outlet property="levelLabel" destination="Ldc-Li-XaU" id="kLq-ZI-46h"/>
                 <outlet property="nextShapeView" destination="Oas-eg-vlD" id="bB7-wx-PfL"/>
                 <outlet property="rowsLabel" destination="v5q-gi-GmW" id="RlV-17-bQ8"/>
                 <outlet property="scoreLabel" destination="gSo-GO-KUw" id="8wn-VV-1gw"/>

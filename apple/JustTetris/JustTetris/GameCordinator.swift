@@ -8,51 +8,67 @@
 
 import Foundation
 
-enum MoveStatus {
-
-  case mute
-  case success
-  case merge
-  case failure
-  case gameOver
-
-  init?(_ status: jsMoveStatus) {
-    switch status {
-    case jsMoveStatusMute:     self = .mute
-    case jsMoveStatusSuccess:  self = .success
-    case jsMoveStatusMerge:    self = .merge
-    case jsMoveStatusFailure:  self = .failure
-    case jsMoveStatusGameOver: self = .gameOver
-    default:
-      return nil
-    }
-  }
-
-}
-
-protocol MoveResult {
-
-  associatedtype RawMoveResult
-
-  var status: MoveStatus { get }
-  var oldShape: Shape { get }
-  var newShape: Shape { get }
-  var score: Float { get }
-
-  init(result: RawMoveResult, shape: jsShape)
-
-}
-
 
 class GameCordinator {
+  
+  struct Result {
+    
+    let raw: jsResult
+    
+    var isMuteAction: Bool { return raw.mute_action }
+    var userAction: Bool { return raw.user_action }
+    var gameOver: Bool { return raw.game_over }
+    var successfull: Bool { return raw.successfull }
+    var didMerge: Bool { return raw.merge.should_merge }
+    
+    var rowsCleared: Int { return Int(raw.merge.rows_cleared) }
+    
+    var oldShape: Shape { return Shape(js_result_old_shape(raw)) }
+    var newShape: Shape { return Shape(js_result_new_shape(raw)) }
+    
+  }
+  
+  struct Ruleset {
+    
+    private let rawRuleset: jsRuleset
+    
+    init(_ ruleset: jsRuleset) { rawRuleset = ruleset }
+    
+    func scoreMultiplier(for level: Float) -> Float {
+      return rawRuleset.level_score_multiplier(level)
+    }
+    
+    func score(for result: Result) -> Float {
+      return [
+        rawRuleset.score_for_translation(result.raw),
+        rawRuleset.score_for_clear(result.raw)
+        
+        ].reduce(0) { (sum, element) -> Float in return sum + element }
+    }
+    
+    func levelIncrement(for level: Float, result: Result) -> Float {
+      return rawRuleset.level_increment_for_clear(level, result.raw)
+    }
+    
+    static var standard: Ruleset { return Ruleset(js_standard_ruleset()) }
+    
+  }
 
   private var rawBoard: jsBoard
   private var rawShape: jsShape
   private var rawNextShape: jsShape
+  private var mutableLevel: Float = 0.0
+  private var mutableScore: Float = 0.0
+  private var mutableRowsCleared = 0
+  
+  private let ruleset = Ruleset(js_standard_ruleset())
 
   var board: Board { return Board(board: rawBoard) }
   var shape: Shape { return Shape(rawShape) }
   var nextShape: Shape { return Shape(rawNextShape) }
+  var level: Float { return mutableLevel }
+  var score: Float { return mutableScore }
+  var rowsCleared: Int { return mutableRowsCleared }
 
   init() {
     rawBoard = js_empty_board()
@@ -65,172 +81,45 @@ class GameCordinator {
     rawNextShape = js_rand_shape()
   }
 
-  func emptyBoard() { rawBoard = js_empty_board() }
-
-  func mergeShape() {
-    js_merge(&rawBoard, &rawShape)
-  }
-
-  struct ClearRowsResult {
-
-    private let result: jsClearRowsResult
-
-    init(_ result: jsClearRowsResult) { self.result = result }
-
-    var count: Int { return Int(result.count) }
-
-    var indicies: [Int] {
-      return [result.indicies.0,
-              result.indicies.1,
-              result.indicies.2,
-              result.indicies.3,
-             ].prefix(count)
-        .map { (n) -> Int in Int(n) }
-    }
-
-    var score: Float {
-      var mutableResult = result
-      return Float(js_clear_rows_score(&mutableResult))
-    }
-
-  }
-
-  func clearRows<A, B>(
-    boardWillChange: (ClearRowsResult) -> A,
-    boardDidChange: (ClearRowsResult) -> B
-    ) -> (
-    boardWillChange: A?,
-    boardDidChange: B?
-    ) {
-      var rawResult = js_clear_rows_result(&rawBoard)
-      let result = ClearRowsResult(rawResult)
-
-      let boardWillChangeResult = boardWillChange(result)
-      js_clear_board_rows(&rawBoard, &rawResult)
-
-      return (boardWillChangeResult, boardDidChange(result))
-  }
-
-
-  struct TranslationResult: MoveResult {
-
-    private let result: jsTranslationResult
-    private let shape: jsShape
-
-    init(result: jsTranslationResult, shape: jsShape) {
-      self.result = result
-      self.shape = shape
-    }
-
-    var status: MoveStatus { return MoveStatus(result.status)! }
-
-    var newShape: Shape {
-      var mutableShape = shape
-      var mutableResult = result
-      return Shape(js_translate_shape(&mutableShape, &mutableResult))
-    }
-
-    var oldShape: Shape { return Shape(shape) }
-
-    var score: Float {
-      var mutableResult = result
-      return Float(js_translate_score(&mutableResult))
-    }
-
+  private func emptyBoard() { rawBoard = js_empty_board() }
+  
+  func reset() {
+    popShape()
+    popShape()
+    emptyBoard()
+    mutableScore = 0
+    mutableLevel = 0
+    mutableRowsCleared = 0
   }
   
-  struct RotationResult: MoveResult {
+  private func translate(vector: jsVec2i, user: Bool) -> Result {
+    let result = Result(raw: js_translate_shape(&rawShape, &rawBoard, vector, user))
     
-    private let result: jsRotationResult
-    private let shape: jsShape
+    mutableLevel += ruleset.levelIncrement(for: level, result: result)
+    mutableScore += ruleset.score(for: result) * ruleset.scoreMultiplier(for: level)
+    mutableRowsCleared += result.rowsCleared
     
-    init(result: jsRotationResult, shape: jsShape) {
-      self.result = result
-      self.shape = shape
-    }
-    
-    var status: MoveStatus { return MoveStatus(result.status)! }
-    var oldShape: Shape { return Shape(shape) }
-    var score: Float { return 0 }
-    
-    var newShape: Shape {
-      var mutableShape = shape
-      var mutableResult = result
-      return Shape(js_rotate_shape(&mutableShape, &mutableResult))
-    }
-    
+    return result
   }
   
-  typealias MoveHandlerReturn<A, B> = (shapeWillChange: A?, shapeDidChange: B?)
-  
-  private func moveShape<Result: MoveResult, Direction, A, B>(
-    _ getResult: (UnsafePointer<jsShape>, UnsafePointer<jsBoard>, Direction) -> Result.RawMoveResult,
-    _ setResult: (UnsafePointer<jsShape>, UnsafePointer<Result.RawMoveResult>) -> jsShape,
-    _ direction: Direction,
-    _ shapeWillChange: (Result) -> A?,
-    _ shapeDidChange: (Result) -> B?
-    ) -> MoveHandlerReturn<A, B> {
-      var rawResult = getResult(&rawShape, &rawBoard, direction)
-      let result = Result(result: rawResult, shape: rawShape)
-      
-      let shapeWillChangeReturn = shapeWillChange(result)
-      rawShape = setResult(&rawShape, &rawResult)
-      return (shapeWillChangeReturn, shapeDidChange(result))
-  }
-
-  private func translateShape<Result: MoveResult, A, B>(
-    _ vector: jsVec2i,
-    _ shapeWillChange: (Result) -> A?,
-    _ shapeDidChange: (Result) -> B?
-    ) -> MoveHandlerReturn<A, B>
-    where Result.RawMoveResult == jsTranslationResult
-  {
-    return moveShape(js_translate_result, js_translate_shape, vector, shapeWillChange, shapeDidChange)
+  func translateShapeDown(user: Bool) -> Result {
+    return translate(vector: jsVec2i(x: 0, y: -1), user: user)
   }
   
-  private func rotateShape<Result: MoveResult, A, B>(
-    _ direction: jsRotation,
-    _ shapeWillChange: (Result) -> A?,
-    _ shapeDidChange: (Result) -> B?
-    ) -> MoveHandlerReturn<A, B>
-    where Result.RawMoveResult == jsRotationResult
-  {
-    return moveShape(js_rotate_result, js_rotate_shape, direction, shapeWillChange, shapeDidChange)
+  func translateShapeLeft(user: Bool) -> Result {
+    return translate(vector: jsVec2i(x: -1, y: 0), user: user)
   }
-
-  func translateShapeDown<A, B>(
-    shapeWillChange: (TranslationResult) -> A?,
-    shapeDidChange: (TranslationResult) -> B?
-    ) -> MoveHandlerReturn<A, B> {
-      return translateShape(jsVec2i(x: 0, y: -1), shapeWillChange, shapeDidChange)
+  
+  func translateShapeRight(user: Bool) -> Result {
+    return translate(vector: jsVec2i(x: 1, y: 0), user: user)
   }
-
-  func translateShapeLeft<A, B>(
-    shapeWillChange: (TranslationResult) -> A?,
-    shapeDidChange: (TranslationResult) -> B?
-    ) -> MoveHandlerReturn<A, B> {
-      return translateShape(jsVec2i(x: -1, y: 0), shapeWillChange, shapeDidChange)
+  
+  private func rotate(direction: jsRotate, user: Bool) -> Result {
+    return Result(raw: js_rotate_shape(&rawShape, &rawBoard, direction, user))
   }
-
-  func translateShapeRight<A, B>(
-    shapeWillChange: (TranslationResult) -> A,
-    shapeDidChange: (TranslationResult) -> B?
-    ) -> MoveHandlerReturn<A, B> {
-      return translateShape(jsVec2i(x: 1, y: 0), shapeWillChange, shapeDidChange)
-  }
-
-  func rotateShapeClockwise<A, B>(
-    shapeWillChange: (RotationResult) -> A?,
-    shapeDidChange: (RotationResult) -> B?
-    ) -> MoveHandlerReturn<A, B> {
-      return rotateShape(jsRotationClockwise, shapeWillChange, shapeDidChange)
-  }
-
-  func rotateShapeCounterClockwise<A, B>(
-    shapeWillChange: (RotationResult) -> A?,
-    shapeDidChange: (RotationResult) -> B?
-    ) -> MoveHandlerReturn<A, B> {
-      return rotateShape(jsRotationCounterClockwise, shapeWillChange, shapeDidChange)
+  
+  func rotateClockwise(user: Bool) -> Result{
+    return rotate(direction: jsRotateClockwise, user: user)
   }
 
 }

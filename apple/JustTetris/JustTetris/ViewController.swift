@@ -74,85 +74,44 @@ class ViewController: NSViewController, MTKViewDelegate {
   @IBOutlet var nextShapeView: GridView!
   @IBOutlet var rowsLabel: NSTextField!
   @IBOutlet var scoreLabel: NSTextField!
+  @IBOutlet var levelLabel: NSTextField!
 
   private var boardDrawer: Drawer?
   private var nextShapeDrawer: Drawer?
 
   let gameCordinator = GameCordinator()
   var timer: Timer?
-  var rowsCleared = 0
-  var score: Float = 0.0
   var gameOver = false
 
   @IBAction func breakPoint(_ sender: Any?) { }
-
-  private func addScore(for result: GameCordinator.TranslationResult) {
-    guard result.status == .success else { return }
-    score += result.score
-    scoreLabel.stringValue = "Score: \(Int(score))"
+  
+  private func updateScore() {
+    rowsLabel.stringValue = "Rows: \(gameCordinator.rowsCleared)"
+    scoreLabel.stringValue = "Score: \(Int(gameCordinator.score))"
+    levelLabel.stringValue = "Level: \(Int(gameCordinator.level))"    
   }
   
-  private func addScore(for result: GameCordinator.ClearRowsResult) {
-    rowsCleared += result.count
-    rowsLabel.stringValue = "Rows: \(rowsCleared)"
-    score += result.score
-    scoreLabel.stringValue = "Score: \(Int(score))"
-  }
-
-  private func translateDownHandler<Result: MoveResult>(_ result: Result) ->
-    (boardViewNeedsDisplay: Bool,
-     nextShapeViewNeedsDisplay: Bool
-    ) {
-      switch(result.status) {
-      case .success:
-        return (true, false)
-
-      case .merge:
-        self.gameCordinator.mergeShape()
-        let _ = self.gameCordinator.clearRows(
-          boardWillChange: self.addScore,
-          boardDidChange: { _ in }
-        )
-        self.gameCordinator.popShape()
-        return (true, true)
-
-      case .gameOver:
-        self.gameCordinator.mergeShape()
-        timer?.invalidate()
-        self.gameOver = true
-        return (true, true)
-
-      default:
-        return (false, false)
-      }
-  }
-
-  private func translateShapeDown(shouldAddScore: Bool) {    
-    let (boardViewNeedsDisplay, nextShapeViewNeedsDisplay) = self.gameCordinator.translateShapeDown(
-      shapeWillChange: shouldAddScore ? addScore : { _ in },
-      shapeDidChange: self.translateDownHandler
-
-    ).shapeDidChange!
-
-    self.boardView.needsDisplay = boardViewNeedsDisplay
-    self.nextShapeView.needsDisplay = nextShapeViewNeedsDisplay
+  private func resetScore() {
+    rowsLabel.stringValue = "Rows: 0"
+    scoreLabel.stringValue = "Score: 0"
+    levelLabel.stringValue = "Level: 0"
   }
 
   private func scheduleTimer() -> Timer {
     return Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true, block: { _ in
-      self.translateShapeDown(shouldAddScore: false)
+      let result = self.gameCordinator.translateShapeDown(user: false)        
+      if result.didMerge { self.gameCordinator.popShape() }
+      if result.gameOver { self.timer?.invalidate() }
+      
+      self.boardView.needsDisplay = true
+      self.nextShapeView.needsDisplay = true
     })
   }
 
   @IBAction func newGame(_ sender: Any?) {
-    gameCordinator.emptyBoard()
-    gameCordinator.popShape()
-    gameCordinator.popShape()
-    rowsCleared = 0
-    score = 0
+    gameCordinator.reset()
     gameOver = false
-    rowsLabel.stringValue = "Rows: 0"
-    scoreLabel.stringValue = "Score: 0"
+    resetScore()
     boardView.needsDisplay = true
     nextShapeView.needsDisplay = true
     timer?.invalidate()
@@ -184,43 +143,48 @@ class ViewController: NSViewController, MTKViewDelegate {
       switch event.keyCode {
 
       case 125: // down arrow
-        self.translateShapeDown(shouldAddScore: true)
+        let result = self.gameCordinator.translateShapeDown(user: true)
+        if result.successfull {
+          self.updateScore()
+          self.boardView.needsDisplay = true
+        }
+        if result.didMerge {
+          self.gameCordinator.popShape()
+          self.boardView.needsDisplay = true
+          self.nextShapeView.needsDisplay = true
+        }
+        if result.gameOver {
+          self.gameOver = true
+          self.timer?.invalidate()
+        }
 
       case 123: // left arrow
-        self.boardView.needsDisplay = self.gameCordinator.translateShapeLeft(
-          shapeWillChange: { _ in },
-          shapeDidChange: { (result) -> Bool in return result.status == .success }
-
-        ).shapeDidChange!
+        if self.gameCordinator
+          .translateShapeLeft(user: true)
+          .successfull { self.boardView.needsDisplay = true }
 
       case 124: // right arrow
-        self.boardView.needsDisplay = self.gameCordinator.translateShapeRight(
-          shapeWillChange: { _ in },
-          shapeDidChange: { (result) -> Bool in return result.status == .success }
-
-        ).shapeDidChange!
+        if self.gameCordinator
+          .translateShapeRight(user: true)
+          .successfull { self.boardView.needsDisplay = true }
 
       case 126: // up arrow
-        self.boardView.needsDisplay = self.gameCordinator.rotateShapeClockwise(
-          shapeWillChange: { _ in },
-          shapeDidChange: { (result) -> Bool in return result.status == .success }
-
-        ).shapeDidChange!
+        if self.gameCordinator
+          .rotateClockwise(user: true)
+          .successfull { self.boardView.needsDisplay = true }
 
       case 49: // ' '
         func fall() {
-          let _ = self.gameCordinator.translateShapeDown(
-            shapeWillChange: self.addScore,
-
-            shapeDidChange: { (result) in
-              guard result.status == .success else { return }
-              let _ = self.translateDownHandler(result)
-              fall()
-          })
+          if self.gameCordinator
+            .translateShapeDown(user: true)
+            .successfull { fall() }
         }
-
         fall()
-        self.translateShapeDown(shouldAddScore: true)
+        
+        self.updateScore()
+        self.gameCordinator.popShape()
+        self.boardView.needsDisplay = true
+        self.nextShapeView.needsDisplay = true
 
       case 35: // 'p'
         if(self.timer?.isValid ?? false) { self.timer?.invalidate() }
