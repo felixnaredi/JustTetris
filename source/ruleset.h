@@ -7,13 +7,15 @@
 #ifndef RULESET_H
 #define RULESET_H
 
-
+#include <stddef.h>
 #include "tetris.h"
 
 typedef struct
 {
-	int reset_duration;
-	int duration;
+	size_t time;
+	size_t force_down_time;
+	int force_down_duration;
+	bool force_down_did_trigger;
 } jsTimer;
 
 typedef struct
@@ -22,7 +24,8 @@ typedef struct
 	float (*score_for_clear)(jsResult);
 	float (*score_for_translation)(jsResult);
 	jsTimer (*increment_timer)(jsTimer);
-	jsTimer (*timer_for_level)(float level);
+  jsTimer (*timer_for_result)(jsTimer, jsResult);
+	int (*timer_force_down_for_level)(float level);
 	float (*level_increment_for_clear)(float level, jsResult);
 	float (*level_score_multiplier)(float level);
 } jsRuleset;

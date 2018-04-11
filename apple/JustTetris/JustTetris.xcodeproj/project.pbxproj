@@ -27,7 +27,7 @@
 		0A1BD6AF206FD3410068329E /* GameCordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCordinator.swift; sourceTree = "<group>"; };
 		0A2313E9207CBE4E002945D7 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = debug.h; path = ../../../source/debug.h; sourceTree = "<group>"; };
 		0A445BFC207CE95200A2A355 /* ruleset.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ruleset.c; path = ../../../source/ruleset.c; sourceTree = "<group>"; };
-		0A445BFD207CE95200A2A355 /* ruleset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ruleset.h; path = ../../../source/ruleset.h; sourceTree = "<group>"; };
+		0A4FDF4F207D978C00F5F920 /* ruleset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ruleset.h; path = ../../../source/ruleset.h; sourceTree = "<group>"; };
 		0A5643A82057D7AD00F00BF6 /* GridRenderEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridRenderEncoder.swift; sourceTree = "<group>"; };
 		0A5E3B972053178D003234D4 /* shader_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shader_types.h; sourceTree = "<group>"; };
 		0A93C84E2056D27600CA6ED6 /* GridDescriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridDescriptor.swift; sourceTree = "<group>"; };
@@ -91,7 +91,7 @@
 				0AD7FD21207BDCAF00A15346 /* debug.c */,
 				0AD7FD1F207BDCAF00A15346 /* tetris.h */,
 				0AD7FD24207BDCAF00A15346 /* tetris.c */,
-				0A445BFD207CE95200A2A355 /* ruleset.h */,
+				0A4FDF4F207D978C00F5F920 /* ruleset.h */,
 				0A445BFC207CE95200A2A355 /* ruleset.c */,
 				0AD7FD22207BDCAF00A15346 /* vector.h */,
 				0AD7FD20207BDCAF00A15346 /* vector.c */,

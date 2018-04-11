@@ -76,6 +76,7 @@ typedef struct
 	bool user_action;
 	bool game_over;
 	bool successfull;
+	bool did_merge;
 
 	struct
 	{
@@ -91,7 +92,6 @@ typedef struct
 
 	struct
 	{
-		bool should_merge;
 		int rows_cleared;
 		int indicies[JS_ROW_CLEAR_MAX];
 	} merge;
@@ -102,6 +102,8 @@ jsShape js_result_new_shape(jsResult result);
 
 jsResult js_translate_shape(jsShape *shape, jsBoard *board, jsVec2i offset,
                             bool user_action);
+
+void js_clear_rows(jsBoard *board, const int *indicies, int count);
 
 typedef enum {
 	jsRotateClockwise        =  1,

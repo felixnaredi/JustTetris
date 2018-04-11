@@ -98,9 +98,13 @@ class ViewController: NSViewController, MTKViewDelegate {
   }
 
   private func scheduleTimer() -> Timer {
-    return Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true, block: { _ in
-      let result = self.gameCordinator.translateShapeDown(user: false)        
-      if result.didMerge { self.gameCordinator.popShape() }
+    return Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true, block: { _ in
+      guard let result = self.gameCordinator.incrementTimer() else { return }
+      
+      if result.didMerge {
+        self.gameCordinator.popShape()
+        self.gameCordinator.clearRows(with: result)
+      }
       if result.gameOver { self.timer?.invalidate() }
       
       self.boardView.needsDisplay = true
@@ -150,6 +154,7 @@ class ViewController: NSViewController, MTKViewDelegate {
         }
         if result.didMerge {
           self.gameCordinator.popShape()
+          self.gameCordinator.clearRows(with: result)
           self.boardView.needsDisplay = true
           self.nextShapeView.needsDisplay = true
         }
@@ -174,17 +179,20 @@ class ViewController: NSViewController, MTKViewDelegate {
           .successfull { self.boardView.needsDisplay = true }
 
       case 49: // ' '
-        func fall() {
-          if self.gameCordinator
-            .translateShapeDown(user: true)
-            .successfull { fall() }
+        func fall() -> GameCordinator.Result {
+          let result = self.gameCordinator.translateShapeDown(user: true)
+          guard result.successfull == false else { return fall() }
+          return result
         }
-        fall()
+        
+        let result = fall()
         
         self.updateScore()
         self.gameCordinator.popShape()
+        self.gameCordinator.clearRows(with: result)
         self.boardView.needsDisplay = true
         self.nextShapeView.needsDisplay = true
+        self.gameOver = result.gameOver
 
       case 35: // 'p'
         if(self.timer?.isValid ?? false) { self.timer?.invalidate() }

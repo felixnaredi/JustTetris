@@ -21,9 +21,52 @@ static float __js_standard_score_for_clear(jsResult result)
 
 static float __js_standard_score_for_translation(jsResult result)
 {
+  if(!result.user_action)
+    return 0.0;
+
 	return result.translation.offset.y < 0 ?
 		(float)-result.translation.offset.y * 0.1 :
 		0.0;
+}
+
+static int __js_standard_timer_force_down_for_level(float level)
+{
+	if(level < 15)
+    		return 60 - (int)level * 3;
+	if(level < 30)
+		return 30 - (int)level;
+	return 1;
+}
+
+static jsTimer __js_standard_increment_timer(jsTimer timer)
+{
+	if(timer.time + 1 == timer.force_down_time)
+		return (jsTimer){
+		      .time = timer.time + 1,
+		      .force_down_time = timer.time + 1 + timer.force_down_duration,
+		      .force_down_duration = timer.force_down_duration,
+		      .force_down_did_trigger = true,
+	      	};
+
+	return (jsTimer){
+		.time = timer.time + 1,
+    		.force_down_time = timer.force_down_time,
+    		.force_down_duration = timer.force_down_duration,
+    		.force_down_did_trigger = false,
+  	};
+}
+
+static jsTimer __js_standard_timer_for_result(jsTimer timer, jsResult result)
+{
+	if(result.successfull && result.user_action && result.translation.offset.y < 0)
+		return (jsTimer){
+			.time = timer.time + 1,
+		      	.force_down_time = timer.time + 1 + timer.force_down_duration,
+		      	.force_down_duration = timer.force_down_duration,
+		      	.force_down_did_trigger = false,
+	      	};
+
+  return timer;
 }
 
 static float
@@ -49,6 +92,9 @@ jsRuleset js_standard_ruleset()
 		.label = "Standard",
 		.score_for_clear = __js_standard_score_for_clear,
 		.score_for_translation = __js_standard_score_for_translation,
+		.increment_timer = __js_standard_increment_timer,
+		.timer_force_down_for_level = __js_standard_timer_force_down_for_level,
+		.timer_for_result = __js_standard_timer_for_result,
 		.level_increment_for_clear = __js_standard_level_increment_for_clear,
 		.level_score_multiplier = __js_standard_level_score_multiplier,
 	};
