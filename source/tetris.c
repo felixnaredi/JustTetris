@@ -164,8 +164,8 @@ jsShape js_result_new_shape(jsResult result)
 {
 	return (jsShape){
 		.blocks = shape_data[result.rotation.new_shape_index].blocks,
-			.offset = result.translation.new_position,
-			.index = result.rotation.new_shape_index,
+		.offset = result.translation.new_position,
+		.index = result.rotation.new_shape_index,
 	};
 }
 

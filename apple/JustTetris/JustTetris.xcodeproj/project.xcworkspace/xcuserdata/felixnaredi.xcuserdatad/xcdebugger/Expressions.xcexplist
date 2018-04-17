@@ -48,7 +48,10 @@
          contextName = "ViewController.breakPoint(_:):ViewController.swift">
          <PersistentStrings>
             <PersistentString
-               value = "sender as? NSButton">
+               value = "self.gameCordinator.timer.raw.force_down_duration">
+            </PersistentString>
+            <PersistentString
+               value = "Float(self.gameCordinator.timer.raw.force_down_duration) / 60.0">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -97,7 +100,12 @@
          contextName = "closure #2 in TriangleFillGridDescriptor.verticies&lt;A&gt;(for:):GridDescriptor.swift">
       </ContextState>
       <ContextState
-         contextName = "Board.buffer.getter:Tetris.swift">
+         contextName = "GridDescriptor.loadVertexBuffer&lt;A&gt;(_:with:):GridDescriptor.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "blocks.enumerated().filter { !$1.isEmpty }">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
       <ContextState
          contextName = "closure #1 in Board.blocks.getter:Tetris.swift">
@@ -108,15 +116,10 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "GameCordinator.board.getter:GameCordinator.swift">
+         contextName = "Board.buffer.getter:Tetris.swift">
       </ContextState>
       <ContextState
-         contextName = "GridDescriptor.loadVertexBuffer&lt;A&gt;(_:with:):GridDescriptor.swift">
-         <PersistentStrings>
-            <PersistentString
-               value = "blocks.enumerated().filter { !$1.isEmpty }">
-            </PersistentString>
-         </PersistentStrings>
+         contextName = "GameCordinator.board.getter:GameCordinator.swift">
       </ContextState>
       <ContextState
          contextName = "GridRenderEncoder.encodeRenderCommands(for:with:):GridRenderEncoder.swift">

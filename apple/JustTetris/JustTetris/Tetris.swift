@@ -100,6 +100,18 @@ enum Formation {
     self.init(blocks: shape.blocks)
   }
   
+  var colorIndex: UInt8 {
+    switch self {
+    case .Oh: return 1
+    case .Ie: return 2
+    case .Sa: return 3
+    case .Ze: return 4
+    case .Lo: return 5
+    case .Je: return 6
+    case .To: return 7
+    }
+  }
+  
 }
 
 
@@ -213,10 +225,23 @@ struct Board {
   
   var blocks: [Block] {
     var mutable = board
-    return memoryMap(pointer: UnsafePointer(UnsafeMutablePointer(&mutable)),
-                     rebound: jsBlock.self,
-                     count: Board.blockAmount,
-                     { Block($0) })    
+    return UnsafePointer(UnsafeMutablePointer(&mutable))
+      .withMemoryRebound(
+        to: jsBlock.self,
+        capacity: Board.blockAmount
+      ) { (pointer) in
+        UnsafeBufferPointer(start: pointer, count: Board.blockAmount)
+          .enumerated()
+          .map({ (offset, block) -> Block in
+            return Block(jsBlock(
+              status: block.status,
+              position: jsVec2i(
+                x: Int32(offset % Board.columnAmount),
+                y: Int32(offset / Board.columnAmount)
+              )
+            ))
+          })
+      }
   }
   
 }

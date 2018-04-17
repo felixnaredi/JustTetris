@@ -7,34 +7,47 @@
 //
 
 #include <metal_stdlib>
-#include "shader_types.h"
 
 using namespace metal;
 
 
 struct RasterizerData
 {
-  float4 clipSpacePosition [[ position ]];
+  float4 position [[ position ]];
   float4 color;
 
-  RasterizerData(float4 _clipSpacePosition, float4 _color) :
-    clipSpacePosition(_clipSpacePosition),
+  RasterizerData(float4 _position, float4 _color) :
+    position(_position),
     color(_color)
   { }
 
-  RasterizerData(float2 _clipSpacePosition, float4 _color) :
-    RasterizerData(float4(_clipSpacePosition, 0, 1), _color)
-  { }
 };
 
 
 vertex RasterizerData
-vertexShader(uint                       vertexID  [[ vertex_id ]],
-             constant js_shader_vertex* verticies [[ buffer(JS_BUFFER_INDEX_VERTICIES) ]],
-             constant float4x4&         matrix    [[ buffer(JS_BUFFER_INDEX_MATRIX) ]])
+vertexShader(constant float2*  positions     [[ buffer(0) ]],
+             constant int2&    grid          [[ buffer(1) ]],
+             constant uint8_t* colorIndicies [[ buffer(2) ]],
+             constant float3*  colors        [[ buffer(3) ]],
+             uint              vertexID      [[ vertex_id ]],
+             uint              instanceID    [[ instance_id ]])
 {
-  const auto v = verticies[vertexID];
-  return RasterizerData(float4(v.position, 0, 1) * matrix, v.color);
+  int2 gp{
+    int(instanceID) % grid.x,
+    int(instanceID) / grid.x,
+  };
+  float2 vp(positions[vertexID]);
+  float2x2 smx{
+    float2(1.0 / grid.x, 0.0),
+    float2(0.0, 1.0 / grid.y),
+  };
+  float2 t(gp.x * 2.0 + 1.0, gp.y * 2.0 + 1.0);
+  float2 p(((vp + t) * smx) + float2(-1, -1));
+  
+  return RasterizerData{
+    float4(p, 0, 1),
+    float4(colors[colorIndicies[instanceID]], 1)
+  };
 }
 
 fragment float4

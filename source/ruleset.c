@@ -31,11 +31,7 @@ static float __js_standard_score_for_translation(jsResult result)
 
 static int __js_standard_timer_force_down_for_level(float level)
 {
-	if(level < 15)
-    		return 60 - (int)level * 3;
-	if(level < 30)
-		return 30 - (int)level;
-	return 1;
+  return 180 / ((int)level + 4) * 2;
 }
 
 static jsTimer __js_standard_increment_timer(jsTimer timer)
@@ -83,7 +79,7 @@ __js_standard_level_increment_for_clear(float level, jsResult result)
 
 static float __js_standard_level_score_multiplier(float level)
 {
-	return (float)((int)level + 1) / 16.0;
+	return (float)((int)level + 1) / 8.0;
 }
 
 jsRuleset js_standard_ruleset()

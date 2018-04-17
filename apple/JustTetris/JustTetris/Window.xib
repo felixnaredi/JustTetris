@@ -19,13 +19,13 @@
                 <rect key="frame" x="0.0" y="0.0" width="398" height="581"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="S3j-WO-UnU" customClass="GridView" customModule="JustTetris" customModuleProvider="target">
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="S3j-WO-UnU" customClass="BoardView" customModule="JustTetris" customModuleProvider="target">
                         <rect key="frame" x="20" y="61" width="250" height="500"/>
                         <constraints>
                             <constraint firstAttribute="width" secondItem="S3j-WO-UnU" secondAttribute="height" multiplier="1:2" id="nCR-h8-A15"/>
                         </constraints>
                     </customView>
-                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="Oas-eg-vlD" customClass="GridView" customModule="JustTetris" customModuleProvider="target">
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="Oas-eg-vlD" customClass="ShapeView" customModule="JustTetris" customModuleProvider="target">
                         <rect key="frame" x="278" y="461" width="100" height="100"/>
                         <constraints>
                             <constraint firstAttribute="width" secondItem="Oas-eg-vlD" secondAttribute="height" multiplier="1:1" id="cDX-mz-Iys"/>
@@ -38,7 +38,7 @@
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <action selector="breakPoint:" target="8z0-cz-Cb3" id="RrX-Y2-mKA"/>
+                            <action selector="breakPointButtonPressed:" target="ukp-Ta-y8J" id="3Ec-WG-yH1"/>
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ws7-tB-9wC">
@@ -48,7 +48,7 @@
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <action selector="newGame:" target="8z0-cz-Cb3" id="7Ep-Cm-bth"/>
+                            <action selector="newGameButtonPressed:" target="ukp-Ta-y8J" id="6NJ-zt-PKd"/>
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="v5q-gi-GmW">
@@ -99,18 +99,20 @@
                 </constraints>
             </view>
             <connections>
-                <outlet property="initialFirstResponder" destination="S3j-WO-UnU" id="cRw-UE-hb3"/>
+                <outlet property="initialFirstResponder" destination="S3j-WO-UnU" id="kJF-5M-QJq"/>
             </connections>
             <point key="canvasLocation" x="-14" y="302.5"/>
         </window>
-        <viewController id="8z0-cz-Cb3" customClass="ViewController" customModule="JustTetris" customModuleProvider="target">
+        <customObject id="OJh-yV-GMa" customClass="GridViewDelegate" customModule="JustTetris" customModuleProvider="target"/>
+        <viewController id="ukp-Ta-y8J" customClass="ViewController" customModule="JustTetris" customModuleProvider="target">
             <connections>
-                <outlet property="boardView" destination="S3j-WO-UnU" id="y2y-0s-wEQ"/>
-                <outlet property="levelLabel" destination="Ldc-Li-XaU" id="kLq-ZI-46h"/>
-                <outlet property="nextShapeView" destination="Oas-eg-vlD" id="bB7-wx-PfL"/>
-                <outlet property="rowsLabel" destination="v5q-gi-GmW" id="RlV-17-bQ8"/>
-                <outlet property="scoreLabel" destination="gSo-GO-KUw" id="8wn-VV-1gw"/>
-                <outlet property="view" destination="EiT-Mj-1SZ" id="eto-Ij-DQj"/>
+                <outlet property="boardView" destination="S3j-WO-UnU" id="WK8-Ct-2bq"/>
+                <outlet property="gridViewDelegate" destination="OJh-yV-GMa" id="05N-36-Hra"/>
+                <outlet property="levelLabel" destination="Ldc-Li-XaU" id="ACt-t6-7wJ"/>
+                <outlet property="rowLabel" destination="v5q-gi-GmW" id="vZo-lN-8K9"/>
+                <outlet property="scoreLabel" destination="gSo-GO-KUw" id="cha-IM-YcX"/>
+                <outlet property="shapeView" destination="Oas-eg-vlD" id="vfb-fI-GSy"/>
+                <outlet property="view" destination="EiT-Mj-1SZ" id="5G7-4v-bYF"/>
             </connections>
         </viewController>
     </objects>

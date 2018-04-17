@@ -2,245 +2,146 @@
 //  ViewController.swift
 //  JustTetris
 //
-//  Created by Felix Naredi on 3/8/18.
+//  Created by Felix Naredi on 4/17/18.
 //  Copyright © 2018 Felix Naredi. All rights reserved.
 //
 
 import Cocoa
-import simd
-import MetalKit
 
 
-class GridView: MTKView {
-
-  var mouseDownHandler: ((NSEvent) -> Void)?
-  var keyDownHandler: ((NSEvent) -> Void)?
-
-  override var clearColor: MTLClearColor {
-    get { return MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0) }
-    set { }
+class ViewController: NSViewController {
+  
+  @IBOutlet weak var shapeView: ShapeView!
+  @IBOutlet weak var boardView: BoardView!
+  @IBOutlet weak var gridViewDelegate: GridViewDelegate!
+  
+  @IBOutlet weak var rowLabel: NSTextField?
+  @IBOutlet weak var scoreLabel: NSTextField?
+  @IBOutlet weak var levelLabel: NSTextField?
+  
+  private func updateLabels() {
+    rowLabel?.stringValue = "Rows: \(gameCordinator.rowsCleared)"
+    scoreLabel?.stringValue = "Score: \(Int(gameCordinator.score))"
+    levelLabel?.stringValue = "Level: \(Int(gameCordinator.level))"
   }
-
-  override func mouseDown(with event: NSEvent) { mouseDownHandler?(event) }
-
-  override func keyDown(with event: NSEvent) { keyDownHandler?(event) }
-
-  override var acceptsFirstResponder: Bool { return true }
-
-}
-
-
-class ViewController: NSViewController, MTKViewDelegate {
-
-  private struct Drawer {
-
-    private let renderContext: RenderContext
-
-    func gridEncoder<Descriptor: GridDescriptor>(descriptor: Descriptor) -> GridRenderEncoder<Descriptor>? {
-      return GridRenderEncoder<Descriptor>(renderContext: renderContext, gridDescriptor: descriptor)
-    }
-
-    init?(context: RenderContext?) {
-      guard let context = context else { return nil }
-      renderContext = context
-    }
-
-    func encode(view: MTKView, _ body: (MTLRenderCommandEncoder) -> Void) {
-      // A view with a frame area of 0 will have a currentRenderPassDescriptor
-      // that causes SIGABRT. Checking for it will prevent it without disrupting
-      // the appearance of the drawing.
-      guard (view.frame.width > 0 && view.frame.height > 0) else { return }
-
-      guard let renderPassDescriptor = view.currentRenderPassDescriptor else { return }
-      guard let commandBuffer = renderContext.commandQueue.makeCommandBuffer() else { return }
-
-      guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else { return }
-
-      renderEncoder.setRenderPipelineState(renderContext.pipelineState)
-
-      body(renderEncoder)
-
-      renderEncoder.endEncoding()
-
-      guard let drawable = view.currentDrawable else { return }
-
-      commandBuffer.present(drawable)
-      commandBuffer.commit()
-    }
-
-  }
-
-  @IBOutlet var boardView: GridView!
-  @IBOutlet var nextShapeView: GridView!
-  @IBOutlet var rowsLabel: NSTextField!
-  @IBOutlet var scoreLabel: NSTextField!
-  @IBOutlet var levelLabel: NSTextField!
-
-  private var boardDrawer: Drawer?
-  private var nextShapeDrawer: Drawer?
-
+  
   let gameCordinator = GameCordinator()
   var timer: Timer?
-  var gameOver = false
-
-  @IBAction func breakPoint(_ sender: Any?) { }
   
-  private func updateScore() {
-    rowsLabel.stringValue = "Rows: \(gameCordinator.rowsCleared)"
-    scoreLabel.stringValue = "Score: \(Int(gameCordinator.score))"
-    levelLabel.stringValue = "Level: \(Int(gameCordinator.level))"    
+  private func handleResult(_ result: GameCordinator.Result) {
+    if result.didMerge {
+      gameCordinator.clearRows(with: result)
+      gameCordinator.popShape()
+      shapeView.setBlocks(
+        with: gameCordinator.nextShape.blocks
+      )
+      shapeView.needsDisplay = true
+    }
+    
+    boardView.setBlocks(
+      with: gameCordinator.board.blocks +
+            gameCordinator.shape.offsetedBlocks
+    )
+    boardView.needsDisplay = true
+    
+    if result.gameOver {
+      timer?.invalidate()
+      timer = nil
+    }
+    
+    updateLabels()
   }
   
-  private func resetScore() {
-    rowsLabel.stringValue = "Rows: 0"
-    scoreLabel.stringValue = "Score: 0"
-    levelLabel.stringValue = "Level: 0"
-  }
-
   private func scheduleTimer() -> Timer {
-    return Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true, block: { _ in
-      guard let result = self.gameCordinator.incrementTimer() else { return }
-      
-      if result.didMerge {
-        self.gameCordinator.popShape()
-        self.gameCordinator.clearRows(with: result)
-      }
-      if result.gameOver { self.timer?.invalidate() }
-      
-      self.boardView.needsDisplay = true
-      self.nextShapeView.needsDisplay = true
+    return Timer.scheduledTimer(
+      withTimeInterval: 1.0 / 60.0,
+      repeats: true,
+      block: { _ in
+        guard let result = self.gameCordinator.incrementTimer()
+          else { return }
+        self.handleResult(result)
     })
   }
-
-  @IBAction func newGame(_ sender: Any?) {
-    gameCordinator.reset()
-    gameOver = false
-    resetScore()
-    boardView.needsDisplay = true
-    nextShapeView.needsDisplay = true
-    timer?.invalidate()
-    timer = scheduleTimer()
+  
+  private func fall() -> GameCordinator.Result {
+    let result = gameCordinator.translateShapeDown(user: true)
+    guard !result.successfull else { return fall() }
+    return result
   }
-
+  
+  private func result(for event: NSEvent)
+    -> GameCordinator.Result?
+  {
+    switch event.keyCode {
+    case 123:
+      return gameCordinator.translateShapeLeft(user: true)
+    case 124:
+      return gameCordinator.translateShapeRight(user: true)
+    case 125:
+      return gameCordinator.translateShapeDown(user: true)
+    case 126:
+      return gameCordinator.rotateClockwise(user: true)
+    case 49:
+      return fall()
+    case 35:
+      if timer == nil { timer = scheduleTimer() }
+      else {
+        timer?.invalidate()
+        timer = nil
+      }
+      return nil
+    default:
+      return nil
+    }
+  }
+  
   override func viewDidLoad() {
-    super.viewDidLoad()
-
-    if let context = RenderContext(with: boardView) {
-      boardDrawer = Drawer(context: context)
-    }
-
-    if let context = RenderContext(with: nextShapeView) {
-      nextShapeDrawer = Drawer(context: context)
-    }
-
-    nextShapeView.delegate = self
-    nextShapeView.enableSetNeedsDisplay = true
-    nextShapeView.mouseDownHandler = { _ in
+    shapeView.delegate = gridViewDelegate
+    shapeView.device = gridViewDelegate.device
+    shapeView.enableSetNeedsDisplay = true
+    shapeView.setBlocks(with: gameCordinator.nextShape.blocks)
+    
+    shapeView.mouseDownHandler = { _ in
       self.gameCordinator.popShape()
-      self.boardView.needsDisplay = true
-      self.nextShapeView.needsDisplay = true
+      self.shapeView
+        .setBlocks(with: self.gameCordinator.nextShape.blocks)
+      self.shapeView.needsDisplay = true
     }
-
-    boardView.delegate = self
+    
+    boardView.delegate = gridViewDelegate
+    boardView.device = gridViewDelegate.device
     boardView.enableSetNeedsDisplay = true
+    boardView.setBlocks(with: gameCordinator.shape.offsetedBlocks)
+    
     boardView.keyDownHandler = { (event) in
-      switch event.keyCode {
-
-      case 125: // down arrow
-        let result = self.gameCordinator.translateShapeDown(user: true)
-        if result.successfull {
-          self.updateScore()
-          self.boardView.needsDisplay = true
-        }
-        if result.didMerge {
-          self.gameCordinator.popShape()
-          self.gameCordinator.clearRows(with: result)
-          self.boardView.needsDisplay = true
-          self.nextShapeView.needsDisplay = true
-        }
-        if result.gameOver {
-          self.gameOver = true
-          self.timer?.invalidate()
-        }
-
-      case 123: // left arrow
-        if self.gameCordinator
-          .translateShapeLeft(user: true)
-          .successfull { self.boardView.needsDisplay = true }
-
-      case 124: // right arrow
-        if self.gameCordinator
-          .translateShapeRight(user: true)
-          .successfull { self.boardView.needsDisplay = true }
-
-      case 126: // up arrow
-        if self.gameCordinator
-          .rotateClockwise(user: true)
-          .successfull { self.boardView.needsDisplay = true }
-
-      case 49: // ' '
-        func fall() -> GameCordinator.Result {
-          let result = self.gameCordinator.translateShapeDown(user: true)
-          guard result.successfull == false else { return fall() }
-          return result
-        }
-        
-        let result = fall()
-        
-        self.updateScore()
-        self.gameCordinator.popShape()
-        self.gameCordinator.clearRows(with: result)
-        self.boardView.needsDisplay = true
-        self.nextShapeView.needsDisplay = true
-        self.gameOver = result.gameOver
-
-      case 35: // 'p'
-        if(self.timer?.isValid ?? false) { self.timer?.invalidate() }
-        else { self.timer = self.scheduleTimer() }
-
-      default:
-        break
-      }
+      guard let result = self.result(for: event)
+      else { return }
+      self.handleResult(result)
     }
-
-    newGame(self)
+    
+    timer = scheduleTimer()
+    updateLabels()
   }
-
-  func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) { }
-
-  func draw(in view: MTKView) {
-    if view == boardView {
-      boardDrawer?.encode(view: boardView) { (encoder) in
-        boardDrawer?
-          .gridEncoder(descriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
-          .encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
-
-        boardDrawer?
-          .gridEncoder(descriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
-          .encodeRenderCommands(for: gameCordinator.board.blocks, with: encoder)
-
-        // Don't draw the shape if game over.
-        guard gameOver == false else { return }
-
-        boardDrawer?
-          .gridEncoder(descriptor: TriangleFillGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
-          .encodeRenderCommands(for: gameCordinator.shape.offsetedBlocks, with: encoder)
-
-        boardDrawer?
-          .gridEncoder(descriptor: LineBorderGridDescriptor(width: Board.columnAmount, height: Board.rowAmount))?
-          .encodeRenderCommands(for: gameCordinator.shape.offsetedBlocks, with: encoder)
-      }
-    } else if view == nextShapeView {
-      nextShapeDrawer?.encode(view: nextShapeView) { (encoder) in
-        nextShapeDrawer?
-          .gridEncoder(descriptor: TriangleFillGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
-          .encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
-
-        nextShapeDrawer?
-          .gridEncoder(descriptor: LineBorderGridDescriptor(width: Shape.columnAmount, height: Shape.rowAmount))?
-          .encodeRenderCommands(for: gameCordinator.nextShape.blocks, with: encoder)
-      }
-    }
+  
+  @IBAction func newGameButtonPressed(_ sender: Any?) {
+    gameCordinator.reset()
+    
+    boardView.setBlocks(
+      with: gameCordinator.board.blocks +
+            gameCordinator.shape.offsetedBlocks
+    )
+    boardView.needsDisplay = true
+    
+    shapeView.setBlocks(
+      with: gameCordinator.nextShape.blocks
+    )
+    shapeView.needsDisplay = true
+    
+    updateLabels()
   }
-
+  
+  @IBAction func breakPointButtonPressed(_ sender: Any?) {
+  
+  }
+  
 }
